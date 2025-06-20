@@ -40,23 +40,29 @@
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges9 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges10 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges11 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges14 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges15 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges16 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges13 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges12 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Utilities.BunifuPages.BunifuAnimatorNS.Animation animation1 = new Utilities.BunifuPages.BunifuAnimatorNS.Animation();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GameLaunch));
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges17 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges18 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges19 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges20 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges13 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges21 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Utilities.BunifuPages.BunifuAnimatorNS.Animation animation1 = new Utilities.BunifuPages.BunifuAnimatorNS.Animation();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GameLaunch));
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges12 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges14 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges15 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges16 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges20 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges22 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges23 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges24 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges25 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges26 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges27 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges28 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges29 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges30 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges31 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges32 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             tBRam = new CloudLauncher.components.TrackBar(components);
             dDVersions = new CloudLauncher.components.DropDown(components);
             btnStartGame = new CloudLauncher.components.Button(components);
@@ -81,6 +87,12 @@
             Pages = new Bunifu.UI.WinForms.BunifuPages();
             PageHome = new TabPage();
             PageSettings = new TabPage();
+            boxJoin = new CloudLauncher.components.GroupBox(components);
+            boxArgs = new CloudLauncher.components.GroupBox(components);
+            boxVersion = new CloudLauncher.components.GroupBox(components);
+            boxRez = new CloudLauncher.components.GroupBox(components);
+            boxJava = new CloudLauncher.components.GroupBox(components);
+            boxRam = new CloudLauncher.components.GroupBox(components);
             panelSidebar = new Panel();
             button1 = new CloudLauncher.components.Button(components);
             btnChangeLog = new CloudLauncher.components.Button(components);
@@ -97,6 +109,12 @@
             guna2Elipse1 = new Guna.UI2.WinForms.Guna2Elipse(components);
             Pages.SuspendLayout();
             PageSettings.SuspendLayout();
+            boxJoin.SuspendLayout();
+            boxArgs.SuspendLayout();
+            boxVersion.SuspendLayout();
+            boxRez.SuspendLayout();
+            boxJava.SuspendLayout();
+            boxRam.SuspendLayout();
             panelSidebar.SuspendLayout();
             profilePanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pbUserProfile).BeginInit();
@@ -107,11 +125,11 @@
             // tBRam
             // 
             tBRam.FillColor = Color.White;
-            tBRam.Location = new Point(245, 335);
+            tBRam.Location = new Point(18, 54);
             tBRam.Maximum = 8192;
             tBRam.Minimum = 1024;
             tBRam.Name = "tBRam";
-            tBRam.Size = new Size(323, 23);
+            tBRam.Size = new Size(323, 27);
             tBRam.Style = Guna.UI2.WinForms.Enums.TrackBarStyle.Metro;
             tBRam.TabIndex = 0;
             tBRam.ThumbColor = Color.FromArgb(231, 80, 34);
@@ -127,7 +145,7 @@
             dDVersions.CustomizableEdges = customizableEdges1;
             dDVersions.DrawMode = DrawMode.OwnerDrawFixed;
             dDVersions.DropDownStyle = ComboBoxStyle.DropDownList;
-            dDVersions.FillColor = Color.FromArgb(25, 25, 25);
+            dDVersions.FillColor = Color.FromArgb(15, 15, 15);
             dDVersions.FocusedColor = Color.FromArgb(231, 80, 34);
             dDVersions.FocusedState.BorderColor = Color.FromArgb(231, 80, 34);
             dDVersions.Font = new Font("Trebuchet MS", 9F);
@@ -229,13 +247,13 @@
             txtJoinServerIP.Font = new Font("Trebuchet MS", 9F);
             txtJoinServerIP.ForeColor = Color.White;
             txtJoinServerIP.HoverState.BorderColor = Color.FromArgb(255, 87, 34);
-            txtJoinServerIP.Location = new Point(29, 25);
+            txtJoinServerIP.Location = new Point(17, 52);
             txtJoinServerIP.Name = "txtJoinServerIP";
             txtJoinServerIP.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
             txtJoinServerIP.PlaceholderText = "";
             txtJoinServerIP.SelectedText = "";
             txtJoinServerIP.ShadowDecoration.CustomizableEdges = customizableEdges8;
-            txtJoinServerIP.Size = new Size(210, 36);
+            txtJoinServerIP.Size = new Size(202, 36);
             txtJoinServerIP.TabIndex = 0;
             txtJoinServerIP.TextChanged += txtJoinServerIP_TextChanged;
             // 
@@ -256,7 +274,7 @@
             txtJoinServerPort.Font = new Font("Trebuchet MS", 9F);
             txtJoinServerPort.ForeColor = Color.White;
             txtJoinServerPort.HoverState.BorderColor = Color.FromArgb(255, 87, 34);
-            txtJoinServerPort.Location = new Point(245, 25);
+            txtJoinServerPort.Location = new Point(225, 52);
             txtJoinServerPort.Name = "txtJoinServerPort";
             txtJoinServerPort.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
             txtJoinServerPort.PlaceholderText = "";
@@ -283,13 +301,13 @@
             txtGameScreenWidth.Font = new Font("Trebuchet MS", 9F);
             txtGameScreenWidth.ForeColor = Color.White;
             txtGameScreenWidth.HoverState.BorderColor = Color.FromArgb(255, 87, 34);
-            txtGameScreenWidth.Location = new Point(31, 91);
+            txtGameScreenWidth.Location = new Point(18, 52);
             txtGameScreenWidth.Name = "txtGameScreenWidth";
             txtGameScreenWidth.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
             txtGameScreenWidth.PlaceholderText = "1600";
             txtGameScreenWidth.SelectedText = "";
             txtGameScreenWidth.ShadowDecoration.CustomizableEdges = customizableEdges10;
-            txtGameScreenWidth.Size = new Size(136, 36);
+            txtGameScreenWidth.Size = new Size(174, 36);
             txtGameScreenWidth.TabIndex = 0;
             txtGameScreenWidth.TextChanged += txtGameScreenWidth_TextChanged;
             // 
@@ -310,13 +328,13 @@
             txtGameScreenHeight.Font = new Font("Trebuchet MS", 9F);
             txtGameScreenHeight.ForeColor = Color.White;
             txtGameScreenHeight.HoverState.BorderColor = Color.FromArgb(255, 87, 34);
-            txtGameScreenHeight.Location = new Point(173, 91);
+            txtGameScreenHeight.Location = new Point(198, 52);
             txtGameScreenHeight.Name = "txtGameScreenHeight";
             txtGameScreenHeight.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
             txtGameScreenHeight.PlaceholderText = "900";
             txtGameScreenHeight.SelectedText = "";
             txtGameScreenHeight.ShadowDecoration.CustomizableEdges = customizableEdges11;
-            txtGameScreenHeight.Size = new Size(113, 36);
+            txtGameScreenHeight.Size = new Size(143, 36);
             txtGameScreenHeight.TabIndex = 0;
             txtGameScreenHeight.TextChanged += txtGameScreenHeight_TextChanged;
             // 
@@ -331,7 +349,7 @@
             cbFullScreen.CheckedState.FillColor = Color.FromArgb(231, 80, 34);
             cbFullScreen.Font = new Font("Trebuchet MS", 9F, FontStyle.Bold);
             cbFullScreen.ForeColor = Color.White;
-            cbFullScreen.Location = new Point(292, 100);
+            cbFullScreen.Location = new Point(350, 58);
             cbFullScreen.Name = "cbFullScreen";
             cbFullScreen.Size = new Size(86, 22);
             cbFullScreen.TabIndex = 0;
@@ -363,7 +381,7 @@
             txtGameJavaPath.BackColor = Color.Transparent;
             txtGameJavaPath.BorderColor = Color.Transparent;
             txtGameJavaPath.BorderRadius = 6;
-            txtGameJavaPath.CustomizableEdges = customizableEdges14;
+            txtGameJavaPath.CustomizableEdges = customizableEdges17;
             txtGameJavaPath.DefaultText = "";
             txtGameJavaPath.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
             txtGameJavaPath.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
@@ -374,13 +392,13 @@
             txtGameJavaPath.Font = new Font("Trebuchet MS", 9F);
             txtGameJavaPath.ForeColor = Color.White;
             txtGameJavaPath.HoverState.BorderColor = Color.FromArgb(255, 87, 34);
-            txtGameJavaPath.Location = new Point(29, 158);
+            txtGameJavaPath.Location = new Point(18, 52);
             txtGameJavaPath.Name = "txtGameJavaPath";
             txtGameJavaPath.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
             txtGameJavaPath.PlaceholderText = "";
             txtGameJavaPath.SelectedText = "";
-            txtGameJavaPath.ShadowDecoration.CustomizableEdges = customizableEdges14;
-            txtGameJavaPath.Size = new Size(256, 36);
+            txtGameJavaPath.ShadowDecoration.CustomizableEdges = customizableEdges17;
+            txtGameJavaPath.Size = new Size(308, 36);
             txtGameJavaPath.TabIndex = 0;
             // 
             // btnPickJava
@@ -388,7 +406,7 @@
             btnPickJava.Animated = true;
             btnPickJava.BackColor = Color.Transparent;
             btnPickJava.BorderRadius = 6;
-            btnPickJava.CustomizableEdges = customizableEdges15;
+            btnPickJava.CustomizableEdges = customizableEdges18;
             btnPickJava.DisabledState.BorderColor = Color.DarkGray;
             btnPickJava.DisabledState.CustomBorderColor = Color.DarkGray;
             btnPickJava.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
@@ -398,10 +416,10 @@
             btnPickJava.ForeColor = Color.White;
             btnPickJava.HoverState.FillColor = Color.FromArgb(231, 80, 34);
             btnPickJava.IndicateFocus = true;
-            btnPickJava.Location = new Point(291, 158);
+            btnPickJava.Location = new Point(332, 52);
             btnPickJava.Name = "btnPickJava";
             btnPickJava.PressedColor = Color.FromArgb(231, 80, 34);
-            btnPickJava.ShadowDecoration.CustomizableEdges = customizableEdges16;
+            btnPickJava.ShadowDecoration.CustomizableEdges = customizableEdges19;
             btnPickJava.Size = new Size(104, 36);
             btnPickJava.TabIndex = 0;
             btnPickJava.TabStop = false;
@@ -419,7 +437,7 @@
             cbReleaseVersion.CheckedState.FillColor = Color.FromArgb(231, 80, 34);
             cbReleaseVersion.Font = new Font("Trebuchet MS", 9F, FontStyle.Bold);
             cbReleaseVersion.ForeColor = Color.White;
-            cbReleaseVersion.Location = new Point(455, 25);
+            cbReleaseVersion.Location = new Point(45, 56);
             cbReleaseVersion.Name = "cbReleaseVersion";
             cbReleaseVersion.Size = new Size(70, 22);
             cbReleaseVersion.TabIndex = 0;
@@ -442,7 +460,7 @@
             cbSnapshotVersion.CheckedState.FillColor = Color.FromArgb(231, 80, 34);
             cbSnapshotVersion.Font = new Font("Trebuchet MS", 9F, FontStyle.Bold);
             cbSnapshotVersion.ForeColor = Color.White;
-            cbSnapshotVersion.Location = new Point(455, 53);
+            cbSnapshotVersion.Location = new Point(121, 56);
             cbSnapshotVersion.Name = "cbSnapshotVersion";
             cbSnapshotVersion.Size = new Size(77, 22);
             cbSnapshotVersion.TabIndex = 0;
@@ -465,7 +483,7 @@
             cbAlphaVersion.CheckedState.FillColor = Color.FromArgb(231, 80, 34);
             cbAlphaVersion.Font = new Font("Trebuchet MS", 9F, FontStyle.Bold);
             cbAlphaVersion.ForeColor = Color.White;
-            cbAlphaVersion.Location = new Point(455, 81);
+            cbAlphaVersion.Location = new Point(204, 56);
             cbAlphaVersion.Name = "cbAlphaVersion";
             cbAlphaVersion.Size = new Size(59, 22);
             cbAlphaVersion.TabIndex = 0;
@@ -488,7 +506,7 @@
             cbBetaVersion.CheckedState.FillColor = Color.FromArgb(231, 80, 34);
             cbBetaVersion.Font = new Font("Trebuchet MS", 9F, FontStyle.Bold);
             cbBetaVersion.ForeColor = Color.White;
-            cbBetaVersion.Location = new Point(455, 109);
+            cbBetaVersion.Location = new Point(269, 56);
             cbBetaVersion.Name = "cbBetaVersion";
             cbBetaVersion.Size = new Size(52, 22);
             cbBetaVersion.TabIndex = 0;
@@ -517,13 +535,13 @@
             txtCustomArgs.Font = new Font("Trebuchet MS", 9F);
             txtCustomArgs.ForeColor = Color.White;
             txtCustomArgs.HoverState.BorderColor = Color.FromArgb(255, 87, 34);
-            txtCustomArgs.Location = new Point(444, 182);
+            txtCustomArgs.Location = new Point(20, 52);
             txtCustomArgs.Name = "txtCustomArgs";
             txtCustomArgs.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
             txtCustomArgs.PlaceholderText = "-help";
             txtCustomArgs.SelectedText = "";
             txtCustomArgs.ShadowDecoration.CustomizableEdges = customizableEdges13;
-            txtCustomArgs.Size = new Size(200, 36);
+            txtCustomArgs.Size = new Size(327, 36);
             txtCustomArgs.TabIndex = 0;
             // 
             // txtRam
@@ -532,7 +550,7 @@
             txtRam.BackColor = Color.Transparent;
             txtRam.BorderColor = Color.Transparent;
             txtRam.BorderRadius = 6;
-            txtRam.CustomizableEdges = customizableEdges12;
+            txtRam.CustomizableEdges = customizableEdges21;
             txtRam.DefaultText = "";
             txtRam.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
             txtRam.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
@@ -543,13 +561,13 @@
             txtRam.Font = new Font("Trebuchet MS", 9F);
             txtRam.ForeColor = Color.White;
             txtRam.HoverState.BorderColor = Color.FromArgb(255, 87, 34);
-            txtRam.Location = new Point(597, 335);
+            txtRam.Location = new Point(347, 53);
             txtRam.Name = "txtRam";
             txtRam.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
             txtRam.PlaceholderText = "";
             txtRam.SelectedText = "";
-            txtRam.ShadowDecoration.CustomizableEdges = customizableEdges12;
-            txtRam.Size = new Size(123, 35);
+            txtRam.ShadowDecoration.CustomizableEdges = customizableEdges21;
+            txtRam.Size = new Size(84, 27);
             txtRam.TabIndex = 0;
             txtRam.Leave += txtRam_Leave;
             // 
@@ -575,10 +593,10 @@
             Pages.Location = new Point(301, 37);
             Pages.Multiline = true;
             Pages.Name = "Pages";
-            Pages.Page = PageHome;
-            Pages.PageIndex = 0;
-            Pages.PageName = "PageHome";
-            Pages.PageTitle = "Home";
+            Pages.Page = PageSettings;
+            Pages.PageIndex = 1;
+            Pages.PageName = "PageSettings";
+            Pages.PageTitle = "Settings";
             Pages.SelectedIndex = 0;
             Pages.Size = new Size(857, 530);
             Pages.TabIndex = 0;
@@ -613,26 +631,140 @@
             // PageSettings
             // 
             PageSettings.BackColor = Color.FromArgb(15, 15, 15);
-            PageSettings.Controls.Add(txtJoinServerIP);
-            PageSettings.Controls.Add(txtRam);
-            PageSettings.Controls.Add(txtJoinServerPort);
-            PageSettings.Controls.Add(txtCustomArgs);
-            PageSettings.Controls.Add(tBRam);
-            PageSettings.Controls.Add(txtGameScreenWidth);
-            PageSettings.Controls.Add(cbBetaVersion);
-            PageSettings.Controls.Add(txtGameScreenHeight);
-            PageSettings.Controls.Add(cbAlphaVersion);
-            PageSettings.Controls.Add(cbFullScreen);
-            PageSettings.Controls.Add(cbSnapshotVersion);
-            PageSettings.Controls.Add(txtGameJavaPath);
-            PageSettings.Controls.Add(cbReleaseVersion);
-            PageSettings.Controls.Add(btnPickJava);
+            PageSettings.Controls.Add(boxJoin);
+            PageSettings.Controls.Add(boxArgs);
+            PageSettings.Controls.Add(boxVersion);
+            PageSettings.Controls.Add(boxRez);
+            PageSettings.Controls.Add(boxJava);
+            PageSettings.Controls.Add(boxRam);
             PageSettings.Location = new Point(4, 4);
             PageSettings.Name = "PageSettings";
             PageSettings.Padding = new Padding(3);
             PageSettings.Size = new Size(849, 502);
             PageSettings.TabIndex = 1;
             PageSettings.Text = "Settings";
+            // 
+            // boxJoin
+            // 
+            boxJoin.BackColor = Color.Transparent;
+            boxJoin.BorderColor = Color.Transparent;
+            boxJoin.BorderRadius = 6;
+            boxJoin.Controls.Add(txtJoinServerIP);
+            boxJoin.Controls.Add(txtJoinServerPort);
+            boxJoin.CustomBorderColor = Color.FromArgb(231, 80, 34);
+            boxJoin.CustomizableEdges = customizableEdges12;
+            boxJoin.FillColor = Color.FromArgb(10, 10, 10);
+            boxJoin.Font = new Font("Trebuchet MS", 11F, FontStyle.Bold);
+            boxJoin.ForeColor = Color.White;
+            boxJoin.Location = new Point(478, 11);
+            boxJoin.Name = "boxJoin";
+            boxJoin.ShadowDecoration.CustomizableEdges = customizableEdges12;
+            boxJoin.Size = new Size(359, 103);
+            boxJoin.TabIndex = 3;
+            boxJoin.Text = "Auto Server Join";
+            boxJoin.UseTransparentBackground = true;
+            // 
+            // boxArgs
+            // 
+            boxArgs.BackColor = Color.Transparent;
+            boxArgs.BorderColor = Color.Transparent;
+            boxArgs.BorderRadius = 6;
+            boxArgs.Controls.Add(txtCustomArgs);
+            boxArgs.CustomBorderColor = Color.FromArgb(231, 80, 34);
+            boxArgs.CustomizableEdges = customizableEdges14;
+            boxArgs.FillColor = Color.FromArgb(10, 10, 10);
+            boxArgs.Font = new Font("Trebuchet MS", 11F, FontStyle.Bold);
+            boxArgs.ForeColor = Color.White;
+            boxArgs.Location = new Point(475, 120);
+            boxArgs.Name = "boxArgs";
+            boxArgs.ShadowDecoration.CustomizableEdges = customizableEdges14;
+            boxArgs.Size = new Size(366, 102);
+            boxArgs.TabIndex = 3;
+            boxArgs.Text = "Startup Args";
+            boxArgs.UseTransparentBackground = true;
+            // 
+            // boxVersion
+            // 
+            boxVersion.BackColor = Color.Transparent;
+            boxVersion.BorderColor = Color.Transparent;
+            boxVersion.BorderRadius = 6;
+            boxVersion.Controls.Add(cbReleaseVersion);
+            boxVersion.Controls.Add(cbSnapshotVersion);
+            boxVersion.Controls.Add(cbAlphaVersion);
+            boxVersion.Controls.Add(cbBetaVersion);
+            boxVersion.CustomBorderColor = Color.FromArgb(231, 80, 34);
+            boxVersion.CustomizableEdges = customizableEdges15;
+            boxVersion.FillColor = Color.FromArgb(10, 10, 10);
+            boxVersion.Font = new Font("Trebuchet MS", 11F, FontStyle.Bold);
+            boxVersion.ForeColor = Color.White;
+            boxVersion.Location = new Point(475, 229);
+            boxVersion.Name = "boxVersion";
+            boxVersion.ShadowDecoration.CustomizableEdges = customizableEdges15;
+            boxVersion.Size = new Size(366, 98);
+            boxVersion.TabIndex = 3;
+            boxVersion.Text = "Version Sorting";
+            boxVersion.UseTransparentBackground = true;
+            // 
+            // boxRez
+            // 
+            boxRez.BackColor = Color.Transparent;
+            boxRez.BorderColor = Color.Transparent;
+            boxRez.BorderRadius = 6;
+            boxRez.Controls.Add(txtGameScreenWidth);
+            boxRez.Controls.Add(cbFullScreen);
+            boxRez.Controls.Add(txtGameScreenHeight);
+            boxRez.CustomBorderColor = Color.FromArgb(231, 80, 34);
+            boxRez.CustomizableEdges = customizableEdges16;
+            boxRez.FillColor = Color.FromArgb(10, 10, 10);
+            boxRez.Font = new Font("Trebuchet MS", 11F, FontStyle.Bold);
+            boxRez.ForeColor = Color.White;
+            boxRez.Location = new Point(6, 11);
+            boxRez.Name = "boxRez";
+            boxRez.ShadowDecoration.CustomizableEdges = customizableEdges16;
+            boxRez.Size = new Size(454, 103);
+            boxRez.TabIndex = 3;
+            boxRez.Text = "Minecraft Resolution";
+            boxRez.UseTransparentBackground = true;
+            // 
+            // boxJava
+            // 
+            boxJava.BackColor = Color.Transparent;
+            boxJava.BorderColor = Color.Transparent;
+            boxJava.BorderRadius = 6;
+            boxJava.Controls.Add(txtGameJavaPath);
+            boxJava.Controls.Add(btnPickJava);
+            boxJava.CustomBorderColor = Color.FromArgb(231, 80, 34);
+            boxJava.CustomizableEdges = customizableEdges20;
+            boxJava.FillColor = Color.FromArgb(10, 10, 10);
+            boxJava.Font = new Font("Trebuchet MS", 11F, FontStyle.Bold);
+            boxJava.ForeColor = Color.White;
+            boxJava.Location = new Point(6, 120);
+            boxJava.Name = "boxJava";
+            boxJava.ShadowDecoration.CustomizableEdges = customizableEdges20;
+            boxJava.Size = new Size(454, 103);
+            boxJava.TabIndex = 3;
+            boxJava.Text = "Java Path";
+            boxJava.UseTransparentBackground = true;
+            // 
+            // boxRam
+            // 
+            boxRam.BackColor = Color.Transparent;
+            boxRam.BorderColor = Color.Transparent;
+            boxRam.BorderRadius = 6;
+            boxRam.Controls.Add(tBRam);
+            boxRam.Controls.Add(txtRam);
+            boxRam.CustomBorderColor = Color.FromArgb(231, 80, 34);
+            boxRam.CustomizableEdges = customizableEdges22;
+            boxRam.FillColor = Color.FromArgb(10, 10, 10);
+            boxRam.Font = new Font("Trebuchet MS", 11F, FontStyle.Bold);
+            boxRam.ForeColor = Color.White;
+            boxRam.Location = new Point(6, 229);
+            boxRam.Name = "boxRam";
+            boxRam.ShadowDecoration.CustomizableEdges = customizableEdges22;
+            boxRam.Size = new Size(454, 98);
+            boxRam.TabIndex = 3;
+            boxRam.Text = "Ram Settings";
+            boxRam.UseTransparentBackground = true;
             // 
             // panelSidebar
             // 
@@ -655,7 +787,7 @@
             button1.Animated = true;
             button1.BackColor = Color.Transparent;
             button1.BorderRadius = 6;
-            button1.CustomizableEdges = customizableEdges17;
+            button1.CustomizableEdges = customizableEdges23;
             button1.DisabledState.BorderColor = Color.DarkGray;
             button1.DisabledState.CustomBorderColor = Color.DarkGray;
             button1.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
@@ -668,7 +800,7 @@
             button1.Location = new Point(27, 371);
             button1.Name = "button1";
             button1.PressedColor = Color.FromArgb(231, 80, 34);
-            button1.ShadowDecoration.CustomizableEdges = customizableEdges18;
+            button1.ShadowDecoration.CustomizableEdges = customizableEdges24;
             button1.Size = new Size(256, 45);
             button1.TabIndex = 10;
             button1.TabStop = false;
@@ -679,7 +811,7 @@
             btnChangeLog.Animated = true;
             btnChangeLog.BackColor = Color.Transparent;
             btnChangeLog.BorderRadius = 6;
-            btnChangeLog.CustomizableEdges = customizableEdges19;
+            btnChangeLog.CustomizableEdges = customizableEdges25;
             btnChangeLog.DisabledState.BorderColor = Color.DarkGray;
             btnChangeLog.DisabledState.CustomBorderColor = Color.DarkGray;
             btnChangeLog.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
@@ -692,7 +824,7 @@
             btnChangeLog.Location = new Point(27, 320);
             btnChangeLog.Name = "btnChangeLog";
             btnChangeLog.PressedColor = Color.FromArgb(231, 80, 34);
-            btnChangeLog.ShadowDecoration.CustomizableEdges = customizableEdges20;
+            btnChangeLog.ShadowDecoration.CustomizableEdges = customizableEdges26;
             btnChangeLog.Size = new Size(256, 45);
             btnChangeLog.TabIndex = 9;
             btnChangeLog.TabStop = false;
@@ -703,7 +835,7 @@
             btnSettings2.Animated = true;
             btnSettings2.BackColor = Color.Transparent;
             btnSettings2.BorderRadius = 6;
-            btnSettings2.CustomizableEdges = customizableEdges21;
+            btnSettings2.CustomizableEdges = customizableEdges27;
             btnSettings2.DisabledState.BorderColor = Color.DarkGray;
             btnSettings2.DisabledState.CustomBorderColor = Color.DarkGray;
             btnSettings2.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
@@ -716,7 +848,7 @@
             btnSettings2.Location = new Point(27, 269);
             btnSettings2.Name = "btnSettings2";
             btnSettings2.PressedColor = Color.FromArgb(231, 80, 34);
-            btnSettings2.ShadowDecoration.CustomizableEdges = customizableEdges22;
+            btnSettings2.ShadowDecoration.CustomizableEdges = customizableEdges28;
             btnSettings2.Size = new Size(256, 45);
             btnSettings2.TabIndex = 8;
             btnSettings2.TabStop = false;
@@ -785,7 +917,7 @@
             btnSettings.Animated = true;
             btnSettings.BackColor = Color.Transparent;
             btnSettings.BorderRadius = 6;
-            btnSettings.CustomizableEdges = customizableEdges23;
+            btnSettings.CustomizableEdges = customizableEdges29;
             btnSettings.DisabledState.BorderColor = Color.DarkGray;
             btnSettings.DisabledState.CustomBorderColor = Color.DarkGray;
             btnSettings.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
@@ -798,7 +930,7 @@
             btnSettings.Location = new Point(46, 78);
             btnSettings.Name = "btnSettings";
             btnSettings.PressedColor = Color.FromArgb(231, 80, 34);
-            btnSettings.ShadowDecoration.CustomizableEdges = customizableEdges24;
+            btnSettings.ShadowDecoration.CustomizableEdges = customizableEdges30;
             btnSettings.Size = new Size(105, 38);
             btnSettings.TabIndex = 1;
             btnSettings.TabStop = false;
@@ -835,7 +967,7 @@
             btnHome.Animated = true;
             btnHome.BackColor = Color.Transparent;
             btnHome.BorderRadius = 6;
-            btnHome.CustomizableEdges = customizableEdges25;
+            btnHome.CustomizableEdges = customizableEdges31;
             btnHome.DisabledState.BorderColor = Color.DarkGray;
             btnHome.DisabledState.CustomBorderColor = Color.DarkGray;
             btnHome.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
@@ -848,7 +980,7 @@
             btnHome.Location = new Point(27, 218);
             btnHome.Name = "btnHome";
             btnHome.PressedColor = Color.FromArgb(231, 80, 34);
-            btnHome.ShadowDecoration.CustomizableEdges = customizableEdges26;
+            btnHome.ShadowDecoration.CustomizableEdges = customizableEdges32;
             btnHome.Size = new Size(256, 45);
             btnHome.TabIndex = 0;
             btnHome.TabStop = false;
@@ -857,7 +989,7 @@
             // 
             // launchPanel
             // 
-            launchPanel.BackColor = Color.FromArgb(15, 15, 15);
+            launchPanel.BackColor = Color.FromArgb(25, 25, 25);
             launchPanel.Controls.Add(lblReady);
             launchPanel.Controls.Add(btnStartGame);
             launchPanel.Controls.Add(pbStatus);
@@ -894,7 +1026,14 @@
             Load += GameLaunch_Load;
             Pages.ResumeLayout(false);
             PageSettings.ResumeLayout(false);
-            PageSettings.PerformLayout();
+            boxJoin.ResumeLayout(false);
+            boxArgs.ResumeLayout(false);
+            boxVersion.ResumeLayout(false);
+            boxVersion.PerformLayout();
+            boxRez.ResumeLayout(false);
+            boxRez.PerformLayout();
+            boxJava.ResumeLayout(false);
+            boxRam.ResumeLayout(false);
             panelSidebar.ResumeLayout(false);
             profilePanel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)pbUserProfile).EndInit();
@@ -942,5 +1081,11 @@
         private components.Button button1;
         private components.Button btnChangeLog;
         private components.Button btnSettings2;
+        private components.GroupBox boxJava;
+        private components.GroupBox boxRam;
+        private components.GroupBox boxRez;
+        private components.GroupBox boxArgs;
+        private components.GroupBox boxVersion;
+        private components.GroupBox boxJoin;
     }
 }

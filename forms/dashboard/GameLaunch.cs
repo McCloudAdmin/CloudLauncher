@@ -19,6 +19,7 @@ namespace CloudLauncher.forms.dashboard
     {
         private readonly MinecraftPath _minecraftPath;
         private readonly MinecraftLauncher _launcher;
+        private string _currentJavaPath;
         private MSession _currentSession;
         private bool _isLaunching = false;
         private List<IVersionMetadata> _allVersions = new List<IVersionMetadata>();
@@ -457,6 +458,26 @@ namespace CloudLauncher.forms.dashboard
 
         private async void btnStartGame_Click(object sender, EventArgs e)
         {
+            if (string.IsNullOrWhiteSpace(txtGameJavaPath.Text) || !File.Exists(txtGameJavaPath.Text))
+            {
+                var versionMetadata = dDVersions.SelectedItem as IVersionMetadata;
+                if (versionMetadata != null)
+                {
+                    try
+                    {
+                        // GetVersionAsync is async, GetJavaPath is not.
+                        var version = await versionMetadata.GetVersionAsync();
+                        _currentJavaPath = _launcher.GetJavaPath(version);
+                        txtGameJavaPath.Text = _currentJavaPath;
+                    }
+                    catch (Exception ex)
+                    {
+                        Alert.Warning("Could not automatically find Java path for " + versionMetadata.Name + ": " + ex.Message);   
+                        Logger.Warning($"Could not automatically find Java path for {versionMetadata.Name}: {ex.Message}");
+                    }
+                }
+            }
+
             if (_isLaunching)
                 return;
 
@@ -496,7 +517,7 @@ namespace CloudLauncher.forms.dashboard
                     MinimumRamMb = Math.Min(1024, tBRam.Value / 2), // Set minimum RAM to half of maximum, but not more than 1GB
 
                     // Java settings
-                    JavaPath = txtGameJavaPath.Text.Trim(),
+                    JavaPath = _currentJavaPath,
 
                     // Screen settings
                     ScreenWidth = int.Parse(txtGameScreenHeight.Text),

@@ -47,14 +47,14 @@
             userNavigationBar1.Dock = DockStyle.Top;
             userNavigationBar1.Location = new Point(0, 0);
             userNavigationBar1.Name = "userNavigationBar1";
-            userNavigationBar1.Size = new Size(331, 35);
+            userNavigationBar1.Size = new Size(864, 35);
             userNavigationBar1.TabIndex = 0;
             userNavigationBar1.UseWaitCursor = true;
             // 
             // pictureBox1
             // 
             pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
-            pictureBox1.Location = new Point(102, 61);
+            pictureBox1.Location = new Point(369, 51);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(126, 132);
             pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
@@ -73,7 +73,7 @@
             panel1.Dock = DockStyle.Bottom;
             panel1.Location = new Point(0, 298);
             panel1.Name = "panel1";
-            panel1.Size = new Size(331, 23);
+            panel1.Size = new Size(864, 23);
             panel1.TabIndex = 2;
             panel1.UseWaitCursor = true;
             // 
@@ -102,7 +102,7 @@
             lblAppName.ForeColor = Color.White;
             lblAppName.IsContextMenuEnabled = false;
             lblAppName.IsSelectionEnabled = false;
-            lblAppName.Location = new Point(16, 214);
+            lblAppName.Location = new Point(283, 204);
             lblAppName.Name = "lblAppName";
             lblAppName.Size = new Size(299, 66);
             lblAppName.TabIndex = 4;
@@ -118,7 +118,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(15, 15, 15);
             BackgroundImageLayout = ImageLayout.Stretch;
-            ClientSize = new Size(331, 321);
+            ClientSize = new Size(864, 321);
             Controls.Add(lblAppName);
             Controls.Add(panel1);
             Controls.Add(pictureBox1);
