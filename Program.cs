@@ -3,12 +3,26 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using CloudLauncher.utils;
 using CloudLauncher.Components;
+using CloudLauncher.forms.ui;
+using CloudLauncher.forms.auth;
+using System.Linq;
+using CloudLauncher.forms.dashboard;
+using CmlLib.Core.Auth;
+using CmlLib.Core.Auth.Microsoft;
 
 namespace CloudLauncher
 {
     internal static class Program
     {
-        public static string appWorkDir = Application.StartupPath;
+        public static string appWorkDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "MythicalSystems",
+            "CloudLauncher"
+        );
+        public static string appVersion = "1.0.0";
+        public static string appName = "CloudLauncher";
+        public static string appAuthor = "CloudLauncher";
+        public static InstanceConfig selectedInstance;
 
         /// <summary>
         ///  The main entry point for the application.
@@ -16,35 +30,124 @@ namespace CloudLauncher
         [STAThread]
         static void Main()
         {
+            ApplicationConfiguration.Initialize();
+            Logger.Info("Application starting...");
+
             try
             {
-                Logger.Info("Application starting...");
+                bool shouldRestart = false;
 
-                // Check if another instance of the application is already running
-                Logger.Info("Checking if another instance of the application is already running...");
-                Mutex mutex = new Mutex(true, "CloudLauncher", out bool createdNew);
-                if (!createdNew)
+                do
                 {
-                    Logger.Info("Another instance of the application is already running. Exiting...");
-                    MessageBox.Show("Another instance of the application is already running. Exiting...", "Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-                Logger.Info("No other instance of the application is running. Continuing...");
+                    shouldRestart = false;
 
-                // To customize application configuration such as set high DPI settings or default font,
-                // see https://aka.ms/applicationconfiguration.
-                ApplicationConfiguration.Initialize();
-                Logger.Info("Application configuration initialized");
+                    // Check if we have a remembered instance first
+                    bool rememberInstance = RegistryConfig.GetUserPreference("RememberLastInstance", false);
+                    string lastInstanceDir = RegistryConfig.GetUserPreference<string>("LastInstanceDirectory");
+                    
+                    InstanceConfig selectedInstance = null;
+                    
+                    if (rememberInstance && !string.IsNullOrEmpty(lastInstanceDir))
+                    {
+                        // Try to load the remembered instance
+                        var instancesManager = new InstancesManager();
+                        var instances = instancesManager.GetInstances();
+                        selectedInstance = instances.FirstOrDefault(i => 
+                            Path.GetDirectoryName(i.ConfigPath).Equals(lastInstanceDir, StringComparison.OrdinalIgnoreCase));
+                    }
 
-                Application.Run(new FrmLoadingScreen());
+                    if (selectedInstance == null)
+                    {
+                        // Show instance selector if no remembered instance
+                        using (var instanceSelector = new FrmInstanceSelector())
+                        {
+                            if (instanceSelector.ShowDialog() != DialogResult.OK)
+                            {
+                                Application.Exit();
+                                return;
+                            }
+                            selectedInstance = instanceSelector.SelectedInstance;
+                        }
+                    }
+
+                    // Try auto-login first
+                    bool keepLoggedIn = RegistryConfig.GetUserPreference("KeepLoggedIn", false);
+                    if (keepLoggedIn)
+                    {
+                        string lastUsername = RegistryConfig.GetUserPreference<string>("LastUsername");
+                        string lastUUID = RegistryConfig.GetUserPreference<string>("LastUUID");
+                        bool wasOffline = RegistryConfig.GetUserPreference("WasOffline", false);
+
+                        if (!string.IsNullOrEmpty(lastUsername) && !string.IsNullOrEmpty(lastUUID))
+                        {
+                            try
+                            {
+                                MSession session = null;
+                                if (wasOffline)
+                                {
+                                    session = MSession.CreateOfflineSession(lastUsername);
+                                    var gameLaunch = new GameLaunch(session);
+                                    Application.Run(gameLaunch);
+                                    continue;
+                                }
+                                else
+                                {                
+                                    var loginHandler = JELoginHandlerBuilder.BuildDefault();
+                                    var accounts = loginHandler.AccountManager.GetAccounts();
+                                    
+                                    bool autoLoginSuccessful = false;
+                                    foreach (var account in accounts)
+                                    {
+                                        try
+                                        {
+                                            // Use synchronous call to avoid handle issues
+                                            session = loginHandler.AuthenticateSilently(account).GetAwaiter().GetResult();
+                                            if (session != null && session.Username == lastUsername)
+                                            {
+                                                var gameLaunch = new GameLaunch(session);
+                                                Application.Run(gameLaunch);
+                                                autoLoginSuccessful = true;
+                                                break;
+                                            }
+                                        }
+                                        catch
+                                        {
+                                            // Try next account
+                                            continue;
+                                        }
+                                    }
+
+                                    if (autoLoginSuccessful)
+                                    {
+                                        continue;
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.Error($"Auto-login failed: {ex.Message}");
+                            }
+                        }
+                    }
+
+                    // If auto-login failed or wasn't enabled, show login form
+                    var loginForm = new FrmLogin();
+                    if (loginForm.ShowDialog() == DialogResult.OK)
+                    {
+                        shouldRestart = loginForm.IsLoggingOut;
+                    }
+                    else
+                    {
+                        Application.Exit();
+                        return;
+                    }
+
+                } while (shouldRestart);
             }
             catch (Exception ex)
             {
-                Logger.Error($"Fatal error: {ex.Message}");
-                Logger.Error($"Stack trace: {ex.StackTrace}");
-                MessageBox.Show("A fatal error occurred. Please check the logs for details.", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Logger.Error($"Application error: {ex.Message}");
+                Alert.Error("An error occurred. Please check the logs for details.");
             }
         }
 
@@ -57,14 +160,7 @@ namespace CloudLauncher
         public static void restart()
         {
             Logger.Info("Application restarting...");
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = "cmd.exe",
-                Arguments = $"/c timeout /t 1 && taskkill /F /F /IM \"{Path.GetFileName(Application.ExecutablePath)}\" && start \"\" \"{Application.ExecutablePath}\"",
-                UseShellExecute = true,
-                CreateNoWindow = false
-            });
-            Application.Exit();
+            Application.Restart();
         }
     }
 }

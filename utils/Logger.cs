@@ -17,7 +17,7 @@ namespace CloudLauncher.utils
 
     public static class Logger
     {
-        private static readonly string LogDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
+        private static readonly string LogDirectory = Path.Combine(Program.appWorkDir, "logs");
         private static readonly string LogFile = Path.Combine(LogDirectory, "log.txt");
         private static readonly object LockObj = new object();
 

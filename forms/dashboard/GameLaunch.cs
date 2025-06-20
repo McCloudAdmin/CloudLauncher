@@ -7,11 +7,6 @@ using CmlLib.Core.Version;
 using CmlLib.Core.VersionMetadata;
 using System.Data;
 using System.Text;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.IO;
-using System.Drawing;
-using System.Windows.Forms;
 
 namespace CloudLauncher.forms.dashboard
 {
@@ -117,6 +112,81 @@ namespace CloudLauncher.forms.dashboard
                 // Set default avatar for guest users
                 pbUserProfile.Image = Properties.Resources.error;
             }
+
+
+            FetchChangeLogs(); // Fetch change logs asynchronously
+
+
+        }
+
+
+        private void FetchChangeLogs()
+        {
+            chanegLogWebView.Source = new Uri("https://minecraft-timeline.github.io/");
+            chanegLogWebView.AllowExternalDrop = true;
+
+            // Disable context menu and navigation
+            chanegLogWebView.CoreWebView2InitializationCompleted += (s, e) =>
+            {
+                if (chanegLogWebView.CoreWebView2 != null)
+                {
+                    // Disable context menu
+                    chanegLogWebView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+
+                    // Disable dev tools
+                    chanegLogWebView.CoreWebView2.Settings.AreDevToolsEnabled = false;
+
+                    // Disable right-click menu
+                    chanegLogWebView.CoreWebView2.Settings.IsStatusBarEnabled = false;
+
+                    // Prevent navigation to other sites
+                    chanegLogWebView.CoreWebView2.NavigationStarting += (sender, args) =>
+                    {
+                        if (!args.Uri.StartsWith("https://minecraft-timeline.github.io"))
+                        {
+                            args.Cancel = true;
+                        }
+                    };
+                    // Wait for page load before injecting styles
+                    chanegLogWebView.CoreWebView2.NavigationCompleted += async (s, e) =>
+                    {
+                        await chanegLogWebView.CoreWebView2.ExecuteScriptAsync(@"
+                            // Add custom scrollbar styles
+                            document.head.insertAdjacentHTML('beforeend', `
+                                <style>
+                                    ::-webkit-scrollbar {
+                                        width: 10px;
+                                    }
+                                    ::-webkit-scrollbar-track {
+                                        background: #1a1a1a;
+                                        border-radius: 5px;
+                                    }
+                                    ::-webkit-scrollbar-thumb {
+                                        background: #ff5722;
+                                        border-radius: 5px;
+                                    }
+                                    ::-webkit-scrollbar-thumb:hover {
+                                        background: #e75022;
+                                    }
+                                </style>
+                            `);
+
+                            // Modify footer instead of removing it
+                            const footer = document.querySelector('footer');
+                            footer.style.display = 'none';
+
+                            const header = document.querySelector('header');
+                            header.style.display = 'none';
+
+                        ");
+                    };
+                    chanegLogWebView.CoreWebView2.CookieManager.DeleteAllCookies();
+                    var cookie = chanegLogWebView.CoreWebView2.CookieManager.CreateCookie("isVertical", "true", "minecraft-timeline.github.io", "/");
+                    chanegLogWebView.CoreWebView2.CookieManager.AddOrUpdateCookie(cookie);
+
+                }
+            };
+
         }
 
         private void UpdateProgress(long current, long total, string status)
@@ -218,7 +288,7 @@ namespace CloudLauncher.forms.dashboard
             }
 
             // Select the last used version if available
-            string lastVersion = RegistryConfig.GetUserPreference<string>("LastVersion", null);
+            string lastVersion = RegistryConfig.GetUserPreference<string>("LastVersion");
             if (!string.IsNullOrEmpty(lastVersion))
             {
                 int index = dDVersions.Items.Cast<IVersionMetadata>().ToList().FindIndex(v => v.Name == lastVersion);
@@ -231,69 +301,6 @@ namespace CloudLauncher.forms.dashboard
             {
                 dDVersions.SelectedIndex = 0;
             }
-        }
-
-        private void dDVersions_DrawItem(object sender, DrawItemEventArgs e)
-        {
-            if (e.Index < 0) return;
-
-            e.DrawBackground();
-            var version = (IVersionMetadata)dDVersions.Items[e.Index];
-            var isInstalled = _installedVersions.Contains(version.Name);
-            var versionPath = Path.Combine(_minecraftPath.Versions, version.Name);
-            var isModified = isInstalled && File.Exists(Path.Combine(versionPath, "mods"));
-
-            // Create a more detailed display text
-            var displayText = new StringBuilder();
-            displayText.Append(version.Name);
-
-            // Add version type indicator
-            if (!string.IsNullOrEmpty(version.Type))
-            {
-                displayText.Append($" [{version.Type.ToUpper()}]");
-            }
-
-            // Add status indicators
-            if (isInstalled)
-            {
-                displayText.Append(" ✓"); // Installed checkmark
-            }
-            if (isModified)
-            {
-                displayText.Append(" 🔧"); // Modified indicator
-            }
-
-            // Draw the text with different colors
-            using (var brush = new SolidBrush(e.ForeColor))
-            {
-                e.Graphics.DrawString(displayText.ToString(), e.Font, brush, e.Bounds);
-            }
-
-            e.DrawFocusRectangle();
-        }
-
-        private void dDVersions_MeasureItem(object sender, MeasureItemEventArgs e)
-        {
-            if (e.Index < 0) return;
-
-            var version = (IVersionMetadata)dDVersions.Items[e.Index];
-            var isInstalled = _installedVersions.Contains(version.Name);
-            var versionPath = Path.Combine(_minecraftPath.Versions, version.Name);
-            var isModified = isInstalled && File.Exists(Path.Combine(versionPath, "mods"));
-
-            // Create the same display text as in DrawItem
-            var displayText = new StringBuilder();
-            displayText.Append(version.Name);
-            if (!string.IsNullOrEmpty(version.Type))
-            {
-                displayText.Append($" [{version.Type.ToUpper()}]");
-            }
-            if (isInstalled) displayText.Append(" ✓");
-            if (isModified) displayText.Append(" 🔧");
-
-            // Measure the text size
-            var size = TextRenderer.MeasureText(displayText.ToString(), dDVersions.Font);
-            e.ItemHeight = size.Height + 4; // Add some padding
         }
 
         private void cbVersion_CheckedChanged(object sender, EventArgs e)
@@ -323,14 +330,17 @@ namespace CloudLauncher.forms.dashboard
                 // Load custom arguments
                 txtCustomArgs.Text = RegistryConfig.GetUserPreference<string>("CustomArgs", string.Empty);
                 Logger.Info($"Loaded custom arguments: {txtCustomArgs.Text}");
+
                 // Load Java path
                 txtGameJavaPath.Text = RegistryConfig.GetUserPreference<string>("JavaPath", string.Empty);
                 Logger.Info($"Loaded Java path: {txtGameJavaPath.Text}");
+
                 // Load screen settings
                 txtGameScreenHeight.Text = RegistryConfig.GetUserPreference("ScreenWidth", 1280).ToString();
                 txtGameScreenHeight.Text = RegistryConfig.GetUserPreference("ScreenHeight", 720).ToString();
                 cbFullScreen.Checked = RegistryConfig.GetUserPreference("FullScreen", false);
                 Logger.Info($"Loaded screen settings: {txtGameScreenHeight.Text}x{txtGameScreenHeight.Text}, FullScreen: {cbFullScreen.Checked}");
+
                 // Load server settings
                 txtJoinServerIP.Text = RegistryConfig.GetUserPreference<string>("ServerIP", string.Empty);
                 txtJoinServerPort.Text = RegistryConfig.GetUserPreference("ServerPort", string.Empty);
@@ -342,12 +352,14 @@ namespace CloudLauncher.forms.dashboard
                 _showAlpha = RegistryConfig.GetUserPreference("ShowAlpha", false);
                 _showBeta = RegistryConfig.GetUserPreference("ShowBeta", false);
                 Logger.Info($"Loaded version filter settings: Release: {_showRelease}, Snapshot: {_showSnapshot}, Alpha: {_showAlpha}, Beta: {_showBeta}");
+
                 // Apply filter settings to checkboxes
                 cbReleaseVersion.Checked = _showRelease;
                 cbSnapshotVersion.Checked = _showSnapshot;
                 cbAlphaVersion.Checked = _showAlpha;
                 cbBetaVersion.Checked = _showBeta;
                 Logger.Info($"Applied filter settings to checkboxes");
+
                 // Load username from session or registry
                 if (_currentSession != null)
                 {
@@ -355,7 +367,7 @@ namespace CloudLauncher.forms.dashboard
                 }
                 else
                 {
-                    string username = RegistryConfig.GetUserPreference<string>("LastUsername", null);
+                    string username = RegistryConfig.GetUserPreference<string>("LastUsername");
                     if (!string.IsNullOrEmpty(username))
                     {
                         Logger.Info($"Loaded username from registry: {username}");
@@ -426,7 +438,6 @@ namespace CloudLauncher.forms.dashboard
 
         private void txtCustomArgs_TextChanged(object sender, EventArgs e)
         {
-            // Save custom arguments when text changes
             RegistryConfig.SaveUserPreference("CustomArgs", txtCustomArgs.Text);
         }
 
@@ -472,7 +483,7 @@ namespace CloudLauncher.forms.dashboard
                     }
                     catch (Exception ex)
                     {
-                        Alert.Warning("Could not automatically find Java path for " + versionMetadata.Name + ": " + ex.Message);   
+                        Alert.Warning("Could not automatically find Java path for " + versionMetadata.Name + ": " + ex.Message);
                         Logger.Warning($"Could not automatically find Java path for {versionMetadata.Name}: {ex.Message}");
                     }
                 }
@@ -569,8 +580,10 @@ namespace CloudLauncher.forms.dashboard
             this.Hide();
             // Clear session and settings
             _currentSession = null;
-            RegistryConfig.DeleteValue("LastUsername");
-            RegistryConfig.DeleteValue("LastUUID");
+            RegistryConfig.SaveUserPreference("LastUsername", "");
+            RegistryConfig.SaveUserPreference("LastUUID", "");
+            RegistryConfig.SaveUserPreference("KeepLoggedIn", false);
+            RegistryConfig.SaveUserPreference("WasOffline", false);
 
             // Show login form
             using (var loginForm = new FrmLogin())
@@ -681,6 +694,11 @@ namespace CloudLauncher.forms.dashboard
         private void btnSettings2_Click(object sender, EventArgs e)
         {
             Pages.SetPage(PageSettings);
+        }
+
+        private void btnChangeLog_Click(object sender, EventArgs e)
+        {
+            Pages.SetPage(PageChangeLog);
         }
     }
 }

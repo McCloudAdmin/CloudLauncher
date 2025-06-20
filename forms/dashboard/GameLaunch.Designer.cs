@@ -93,6 +93,8 @@
             boxRez = new CloudLauncher.components.GroupBox(components);
             boxJava = new CloudLauncher.components.GroupBox(components);
             boxRam = new CloudLauncher.components.GroupBox(components);
+            PageChangeLog = new TabPage();
+            chanegLogWebView = new Microsoft.Web.WebView2.WinForms.WebView2();
             panelSidebar = new Panel();
             button1 = new CloudLauncher.components.Button(components);
             btnChangeLog = new CloudLauncher.components.Button(components);
@@ -115,6 +117,8 @@
             boxRez.SuspendLayout();
             boxJava.SuspendLayout();
             boxRam.SuspendLayout();
+            PageChangeLog.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)chanegLogWebView).BeginInit();
             panelSidebar.SuspendLayout();
             profilePanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pbUserProfile).BeginInit();
@@ -160,8 +164,6 @@
             dDVersions.Size = new Size(357, 38);
             dDVersions.TabIndex = 0;
             dDVersions.TabStop = false;
-            dDVersions.DrawItem += dDVersions_DrawItem;
-            dDVersions.MeasureItem += dDVersions_MeasureItem;
             // 
             // btnStartGame
             // 
@@ -543,6 +545,7 @@
             txtCustomArgs.ShadowDecoration.CustomizableEdges = customizableEdges13;
             txtCustomArgs.Size = new Size(327, 36);
             txtCustomArgs.TabIndex = 0;
+            txtCustomArgs.TextChanged += txtCustomArgs_TextChanged;
             // 
             // txtRam
             // 
@@ -589,14 +592,15 @@
             Pages.AllowTransitions = false;
             Pages.Controls.Add(PageHome);
             Pages.Controls.Add(PageSettings);
+            Pages.Controls.Add(PageChangeLog);
             Pages.Dock = DockStyle.Fill;
             Pages.Location = new Point(301, 37);
             Pages.Multiline = true;
             Pages.Name = "Pages";
-            Pages.Page = PageSettings;
-            Pages.PageIndex = 1;
-            Pages.PageName = "PageSettings";
-            Pages.PageTitle = "Settings";
+            Pages.Page = PageChangeLog;
+            Pages.PageIndex = 2;
+            Pages.PageName = "PageChangeLog";
+            Pages.PageTitle = "ChangeLog";
             Pages.SelectedIndex = 0;
             Pages.Size = new Size(857, 530);
             Pages.TabIndex = 0;
@@ -766,6 +770,30 @@
             boxRam.Text = "Ram Settings";
             boxRam.UseTransparentBackground = true;
             // 
+            // PageChangeLog
+            // 
+            PageChangeLog.BackColor = Color.FromArgb(15, 15, 15);
+            PageChangeLog.Controls.Add(chanegLogWebView);
+            PageChangeLog.ForeColor = Color.FromArgb(15, 15, 15);
+            PageChangeLog.Location = new Point(4, 4);
+            PageChangeLog.Name = "PageChangeLog";
+            PageChangeLog.Padding = new Padding(3);
+            PageChangeLog.Size = new Size(849, 502);
+            PageChangeLog.TabIndex = 2;
+            PageChangeLog.Text = "ChangeLog";
+            // 
+            // chanegLogWebView
+            // 
+            chanegLogWebView.AllowExternalDrop = true;
+            chanegLogWebView.CreationProperties = null;
+            chanegLogWebView.DefaultBackgroundColor = Color.White;
+            chanegLogWebView.Dock = DockStyle.Fill;
+            chanegLogWebView.Location = new Point(3, 3);
+            chanegLogWebView.Name = "chanegLogWebView";
+            chanegLogWebView.Size = new Size(843, 496);
+            chanegLogWebView.TabIndex = 0;
+            chanegLogWebView.ZoomFactor = 1D;
+            // 
             // panelSidebar
             // 
             panelSidebar.BackColor = Color.FromArgb(25, 25, 25);
@@ -829,6 +857,7 @@
             btnChangeLog.TabIndex = 9;
             btnChangeLog.TabStop = false;
             btnChangeLog.Text = "ChangeLog";
+            btnChangeLog.Click += btnChangeLog_Click;
             // 
             // btnSettings2
             // 
@@ -1034,6 +1063,8 @@
             boxRez.PerformLayout();
             boxJava.ResumeLayout(false);
             boxRam.ResumeLayout(false);
+            PageChangeLog.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)chanegLogWebView).EndInit();
             panelSidebar.ResumeLayout(false);
             profilePanel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)pbUserProfile).EndInit();
@@ -1087,5 +1118,7 @@
         private components.GroupBox boxArgs;
         private components.GroupBox boxVersion;
         private components.GroupBox boxJoin;
+        private TabPage PageChangeLog;
+        private Microsoft.Web.WebView2.WinForms.WebView2 chanegLogWebView;
     }
 }

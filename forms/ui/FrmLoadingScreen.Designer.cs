@@ -69,6 +69,7 @@
             // 
             // panel1
             // 
+            panel1.BackColor = Color.Transparent;
             panel1.Controls.Add(panel2);
             panel1.Dock = DockStyle.Bottom;
             panel1.Location = new Point(0, 298);

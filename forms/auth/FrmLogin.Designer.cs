@@ -29,14 +29,16 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges9 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges10 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges7 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges8 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges5 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges6 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges3 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges4 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges2 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges3 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges1 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges2 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmLogin));
             Elipse = new Guna.UI2.WinForms.Guna2Elipse(components);
             userNavigationBar1 = new CloudLauncher.components.UserNavigationBar();
@@ -47,6 +49,8 @@
             dropAccounts = new CloudLauncher.components.DropDown(components);
             lblSelectAccount = new CloudLauncher.components.Label(components);
             lblOfflineUsername = new CloudLauncher.components.Label(components);
+            cbKeepLogin = new CloudLauncher.components.CheckBox(components);
+            btnSwitchInstance = new CloudLauncher.components.Button(components);
             SuspendLayout();
             // 
             // Elipse
@@ -60,7 +64,7 @@
             userNavigationBar1.Dock = DockStyle.Top;
             userNavigationBar1.Location = new Point(0, 0);
             userNavigationBar1.Name = "userNavigationBar1";
-            userNavigationBar1.Size = new Size(342, 37);
+            userNavigationBar1.Size = new Size(433, 37);
             userNavigationBar1.TabIndex = 6;
             // 
             // btnLogin
@@ -68,7 +72,7 @@
             btnLogin.Animated = true;
             btnLogin.BackColor = Color.Transparent;
             btnLogin.BorderRadius = 6;
-            btnLogin.CustomizableEdges = customizableEdges7;
+            btnLogin.CustomizableEdges = customizableEdges9;
             btnLogin.DisabledState.BorderColor = Color.DarkGray;
             btnLogin.DisabledState.CustomBorderColor = Color.DarkGray;
             btnLogin.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
@@ -78,11 +82,11 @@
             btnLogin.ForeColor = Color.White;
             btnLogin.HoverState.FillColor = Color.FromArgb(231, 80, 34);
             btnLogin.IndicateFocus = true;
-            btnLogin.Location = new Point(12, 190);
+            btnLogin.Location = new Point(12, 213);
             btnLogin.Name = "btnLogin";
             btnLogin.PressedColor = Color.FromArgb(231, 80, 34);
-            btnLogin.ShadowDecoration.CustomizableEdges = customizableEdges8;
-            btnLogin.Size = new Size(188, 45);
+            btnLogin.ShadowDecoration.CustomizableEdges = customizableEdges10;
+            btnLogin.Size = new Size(276, 45);
             btnLogin.TabIndex = 7;
             btnLogin.TabStop = false;
             btnLogin.Text = "Login";
@@ -93,20 +97,20 @@
             btnRemove.Animated = true;
             btnRemove.BackColor = Color.Transparent;
             btnRemove.BorderRadius = 6;
-            btnRemove.CustomizableEdges = customizableEdges5;
+            btnRemove.CustomizableEdges = customizableEdges7;
             btnRemove.DisabledState.BorderColor = Color.DarkGray;
             btnRemove.DisabledState.CustomBorderColor = Color.DarkGray;
             btnRemove.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
             btnRemove.DisabledState.ForeColor = Color.FromArgb(141, 141, 141);
-            btnRemove.FillColor = Color.FromArgb(255, 87, 34);
+            btnRemove.FillColor = Color.Red;
             btnRemove.Font = new Font("Trebuchet MS", 11F, FontStyle.Bold);
             btnRemove.ForeColor = Color.White;
-            btnRemove.HoverState.FillColor = Color.FromArgb(231, 80, 34);
+            btnRemove.HoverState.FillColor = Color.DarkRed;
             btnRemove.IndicateFocus = true;
-            btnRemove.Location = new Point(206, 190);
+            btnRemove.Location = new Point(294, 213);
             btnRemove.Name = "btnRemove";
-            btnRemove.PressedColor = Color.FromArgb(231, 80, 34);
-            btnRemove.ShadowDecoration.CustomizableEdges = customizableEdges6;
+            btnRemove.PressedColor = Color.DarkRed;
+            btnRemove.ShadowDecoration.CustomizableEdges = customizableEdges8;
             btnRemove.Size = new Size(127, 45);
             btnRemove.TabIndex = 8;
             btnRemove.TabStop = false;
@@ -118,21 +122,21 @@
             btnAddAccount.Animated = true;
             btnAddAccount.BackColor = Color.Transparent;
             btnAddAccount.BorderRadius = 6;
-            btnAddAccount.CustomizableEdges = customizableEdges3;
+            btnAddAccount.CustomizableEdges = customizableEdges5;
             btnAddAccount.DisabledState.BorderColor = Color.DarkGray;
             btnAddAccount.DisabledState.CustomBorderColor = Color.DarkGray;
             btnAddAccount.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
             btnAddAccount.DisabledState.ForeColor = Color.FromArgb(141, 141, 141);
-            btnAddAccount.FillColor = Color.FromArgb(255, 87, 34);
+            btnAddAccount.FillColor = Color.Green;
             btnAddAccount.Font = new Font("Trebuchet MS", 11F, FontStyle.Bold);
             btnAddAccount.ForeColor = Color.White;
-            btnAddAccount.HoverState.FillColor = Color.FromArgb(231, 80, 34);
+            btnAddAccount.HoverState.FillColor = Color.DarkGreen;
             btnAddAccount.IndicateFocus = true;
-            btnAddAccount.Location = new Point(12, 241);
+            btnAddAccount.Location = new Point(226, 264);
             btnAddAccount.Name = "btnAddAccount";
-            btnAddAccount.PressedColor = Color.FromArgb(231, 80, 34);
-            btnAddAccount.ShadowDecoration.CustomizableEdges = customizableEdges4;
-            btnAddAccount.Size = new Size(322, 45);
+            btnAddAccount.PressedColor = Color.DarkGreen;
+            btnAddAccount.ShadowDecoration.CustomizableEdges = customizableEdges6;
+            btnAddAccount.Size = new Size(195, 45);
             btnAddAccount.TabIndex = 9;
             btnAddAccount.TabStop = false;
             btnAddAccount.Text = "Add Premium Account";
@@ -144,7 +148,7 @@
             txtOfflineName.BackColor = Color.Transparent;
             txtOfflineName.BorderColor = Color.Transparent;
             txtOfflineName.BorderRadius = 6;
-            txtOfflineName.CustomizableEdges = customizableEdges2;
+            txtOfflineName.CustomizableEdges = customizableEdges4;
             txtOfflineName.DefaultText = "";
             txtOfflineName.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
             txtOfflineName.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
@@ -155,13 +159,13 @@
             txtOfflineName.Font = new Font("Trebuchet MS", 9F);
             txtOfflineName.ForeColor = Color.White;
             txtOfflineName.HoverState.BorderColor = Color.FromArgb(255, 87, 34);
-            txtOfflineName.Location = new Point(12, 137);
+            txtOfflineName.Location = new Point(12, 140);
             txtOfflineName.Name = "txtOfflineName";
             txtOfflineName.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
             txtOfflineName.PlaceholderText = "";
             txtOfflineName.SelectedText = "";
-            txtOfflineName.ShadowDecoration.CustomizableEdges = customizableEdges2;
-            txtOfflineName.Size = new Size(321, 38);
+            txtOfflineName.ShadowDecoration.CustomizableEdges = customizableEdges4;
+            txtOfflineName.Size = new Size(409, 38);
             txtOfflineName.TabIndex = 10;
             // 
             // dropAccounts
@@ -170,7 +174,7 @@
             dropAccounts.BorderColor = Color.Transparent;
             dropAccounts.BorderRadius = 6;
             dropAccounts.BorderThickness = 0;
-            dropAccounts.CustomizableEdges = customizableEdges1;
+            dropAccounts.CustomizableEdges = customizableEdges3;
             dropAccounts.DrawMode = DrawMode.OwnerDrawFixed;
             dropAccounts.DropDownStyle = ComboBoxStyle.DropDownList;
             dropAccounts.FillColor = Color.FromArgb(25, 25, 25);
@@ -179,13 +183,13 @@
             dropAccounts.Font = new Font("Trebuchet MS", 9F);
             dropAccounts.ForeColor = Color.White;
             dropAccounts.ItemHeight = 32;
-            dropAccounts.Location = new Point(8, 67);
+            dropAccounts.Location = new Point(12, 70);
             dropAccounts.Margin = new Padding(4, 3, 4, 3);
             dropAccounts.MaxDropDownItems = 12;
             dropAccounts.Name = "dropAccounts";
             dropAccounts.RightToLeft = RightToLeft.No;
-            dropAccounts.ShadowDecoration.CustomizableEdges = customizableEdges1;
-            dropAccounts.Size = new Size(325, 38);
+            dropAccounts.ShadowDecoration.CustomizableEdges = customizableEdges3;
+            dropAccounts.Size = new Size(409, 38);
             dropAccounts.TabIndex = 0;
             dropAccounts.TabStop = false;
             dropAccounts.SelectedIndexChanged += dropAccounts_SelectedIndexChanged;
@@ -208,18 +212,67 @@
             lblOfflineUsername.BackColor = Color.Transparent;
             lblOfflineUsername.Font = new Font("Trebuchet MS", 10F);
             lblOfflineUsername.ForeColor = Color.White;
-            lblOfflineUsername.Location = new Point(12, 111);
+            lblOfflineUsername.Location = new Point(12, 114);
             lblOfflineUsername.Name = "lblOfflineUsername";
             lblOfflineUsername.Size = new Size(321, 20);
             lblOfflineUsername.TabIndex = 12;
             lblOfflineUsername.Text = "Offline Username";
+            // 
+            // cbKeepLogin
+            // 
+            cbKeepLogin.Animated = true;
+            cbKeepLogin.AutoSize = true;
+            cbKeepLogin.BackColor = Color.Transparent;
+            cbKeepLogin.CheckedState.BorderColor = Color.FromArgb(231, 80, 34);
+            cbKeepLogin.CheckedState.BorderRadius = 0;
+            cbKeepLogin.CheckedState.BorderThickness = 0;
+            cbKeepLogin.CheckedState.FillColor = Color.FromArgb(231, 80, 34);
+            cbKeepLogin.Font = new Font("Trebuchet MS", 9F, FontStyle.Bold);
+            cbKeepLogin.ForeColor = Color.White;
+            cbKeepLogin.Location = new Point(18, 184);
+            cbKeepLogin.Name = "cbKeepLogin";
+            cbKeepLogin.Size = new Size(136, 22);
+            cbKeepLogin.TabIndex = 13;
+            cbKeepLogin.Text = "Keep me logged in!";
+            cbKeepLogin.UncheckedState.BorderColor = Color.FromArgb(38, 38, 38);
+            cbKeepLogin.UncheckedState.BorderRadius = 0;
+            cbKeepLogin.UncheckedState.BorderThickness = 0;
+            cbKeepLogin.UncheckedState.FillColor = Color.FromArgb(38, 38, 38);
+            cbKeepLogin.UseVisualStyleBackColor = false;
+            // 
+            // btnSwitchInstance
+            // 
+            btnSwitchInstance.Animated = true;
+            btnSwitchInstance.BackColor = Color.Transparent;
+            btnSwitchInstance.BorderRadius = 6;
+            btnSwitchInstance.CustomizableEdges = customizableEdges1;
+            btnSwitchInstance.DisabledState.BorderColor = Color.DarkGray;
+            btnSwitchInstance.DisabledState.CustomBorderColor = Color.DarkGray;
+            btnSwitchInstance.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
+            btnSwitchInstance.DisabledState.ForeColor = Color.FromArgb(141, 141, 141);
+            btnSwitchInstance.FillColor = Color.Gray;
+            btnSwitchInstance.Font = new Font("Trebuchet MS", 11F, FontStyle.Bold);
+            btnSwitchInstance.ForeColor = Color.White;
+            btnSwitchInstance.HoverState.FillColor = Color.DarkGray;
+            btnSwitchInstance.IndicateFocus = true;
+            btnSwitchInstance.Location = new Point(11, 264);
+            btnSwitchInstance.Name = "btnSwitchInstance";
+            btnSwitchInstance.PressedColor = Color.Gray;
+            btnSwitchInstance.ShadowDecoration.CustomizableEdges = customizableEdges2;
+            btnSwitchInstance.Size = new Size(209, 45);
+            btnSwitchInstance.TabIndex = 14;
+            btnSwitchInstance.TabStop = false;
+            btnSwitchInstance.Text = "Switch Instance";
+            btnSwitchInstance.Click += btnSwitchInstance_Click;
             // 
             // FrmLogin
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(15, 15, 15);
-            ClientSize = new Size(342, 299);
+            ClientSize = new Size(433, 328);
+            Controls.Add(btnSwitchInstance);
+            Controls.Add(cbKeepLogin);
             Controls.Add(lblOfflineUsername);
             Controls.Add(lblSelectAccount);
             Controls.Add(dropAccounts);
@@ -236,6 +289,7 @@
             StartPosition = FormStartPosition.CenterScreen;
             Text = "CloudLauncher";
             ResumeLayout(false);
+            PerformLayout();
 
         }
 
@@ -249,5 +303,7 @@
         private components.DropDown dropAccounts;
         private components.Label lblOfflineUsername;
         private components.Label lblSelectAccount;
+        private components.CheckBox cbKeepLogin;
+        private components.Button btnSwitchInstance;
     }
 }

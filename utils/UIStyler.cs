@@ -4,16 +4,16 @@ using System.Drawing;
 using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
-using YamlDotNet.Serialization;
+using Newtonsoft.Json;
 
 namespace CloudLauncher.utils
 {
     public class UIStyler
     {
-        private static string stylepath = Program.appWorkDir + @"\styles.yaml";
+        private static string stylepath = Program.appWorkDir + @"\styles.json";
         private static Dictionary<string, Dictionary<string, string>> styles;
 
-        private static void ReadYaml()
+        private static void ReadJson()
         {
             try
             {
@@ -21,75 +21,77 @@ namespace CloudLauncher.utils
 
                 if (File.Exists(stylepath))
                 {
-                    using (StreamReader reader = new StreamReader(stylepath))
-                    {
-                        var dsl = new DeserializerBuilder().Build();
-                        styles = dsl.Deserialize<Dictionary<string, Dictionary<string, string>>>(reader);
-                    }
+                    string jsonContent = File.ReadAllText(stylepath);
+                    styles = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, string>>>(jsonContent);
                 }
                 else
                 {
-                    string yamlContent = @"
-# Global styles (applied to all forms)
-Global:
-  BackColor: 30,30,30
-  ForeColor: 255,255,255
-  Font: Segoe UI, 9pt
+                    var defaultStyles = new Dictionary<string, Dictionary<string, string>>
+                    {
+                        ["Global"] = new Dictionary<string, string>
+                        {
+                            ["BackColor"] = "30,30,30",
+                            ["ForeColor"] = "255,255,255",
+                            ["Font"] = "Segoe UI, 9pt"
+                        },
+                        ["FrmMain"] = new Dictionary<string, string>
+                        {
+                            ["BackColor"] = "30,30,30",
+                            ["ForeColor"] = "255,255,255",
+                            ["FormBorderStyle"] = "None",
+                            ["StartPosition"] = "CenterScreen",
+                            ["Size"] = "800,600"
+                        },
+                        ["UserNavigationBar"] = new Dictionary<string, string>
+                        {
+                            ["BackColor"] = "40,40,40",
+                            ["Dock"] = "Top",
+                            ["Height"] = "30"
+                        },
+                        ["FrmMain.lblAppName"] = new Dictionary<string, string>
+                        {
+                            ["Text"] = "CloudLauncher (DEV)",
+                            ["ForeColor"] = "255,255,255",
+                            ["Font"] = "Segoe UI, 10pt, style=Bold",
+                            ["Location"] = "10,5"
+                        },
+                        ["FrmMain.lblClose"] = new Dictionary<string, string>
+                        {
+                            ["ForeColor"] = "255,255,255",
+                            ["Font"] = "Segoe UI, 10pt",
+                            ["Location"] = "770,5",
+                            ["Cursor"] = "Hand"
+                        },
+                        ["FrmMain.lblMinimize"] = new Dictionary<string, string>
+                        {
+                            ["ForeColor"] = "255,255,255",
+                            ["Font"] = "Segoe UI, 10pt",
+                            ["Location"] = "740,5",
+                            ["Cursor"] = "Hand"
+                        },
+                        ["lblAppName"] = new Dictionary<string, string>
+                        {
+                            ["ForeColor"] = "255,255,255",
+                            ["Font"] = "Segoe UI, 10pt"
+                        }
+                    };
 
-# Form-specific styles
-FrmMain:
-  BackColor: 30,30,30
-  ForeColor: 255,255,255
-  FormBorderStyle: None
-  StartPosition: CenterScreen
-  Size: 800,600
-
-# Component-specific styles
-UserNavigationBar:
-  BackColor: 40,40,40
-  Dock: Top
-  Height: 30
-
-# Form-specific control styles (using dot notation)
-FrmMain.lblAppName:
-  Text: CloudLauncher (DEV)
-  ForeColor: 255,255,255
-  Font: Segoe UI, 10pt, style=Bold
-  Location: 10,5
-
-FrmMain.lblClose:
-  ForeColor: 255,255,255
-  Font: Segoe UI, 10pt
-  Location: 770,5
-  Cursor: Hand
-
-FrmMain.lblMinimize:
-  ForeColor: 255,255,255
-  Font: Segoe UI, 10pt
-  Location: 740,5
-  Cursor: Hand
-
-# Global control styles (applied to all forms)
-lblAppName:
-  ForeColor: 255,255,255
-  Font: Segoe UI, 10pt
-";
-
-                    File.AppendAllText(stylepath, yamlContent);
+                    string jsonContent = JsonConvert.SerializeObject(defaultStyles, Formatting.Indented);
+                    File.WriteAllText(stylepath, jsonContent);
                     Logger.Warning("[THEME] Style file does not exist! Created default styles.");
                     Program.restart();
                 }
             }
             catch (Exception ex)
             {
-                Logger.Warning("[THEME] Failed to read yml file: " + ex.ToString());
+                Logger.Warning("[THEME] Failed to read json file: " + ex.ToString());
             }
         }
 
         public static void ApplyStyles(Control form, bool debug)
         {
             Logger.Info("[THEME] Applying styles to " + form.Name);
-            ReadYaml();
+            ReadJson();
             try
             {
                 // Apply global styles first

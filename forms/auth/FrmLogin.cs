@@ -12,6 +12,7 @@ namespace CloudLauncher.forms.auth
         private JELoginHandler loginHandler;
         private bool isAuthenticating = false;
         private List<IXboxGameAccount> savedAccounts = new List<IXboxGameAccount>();
+        public bool IsLoggingOut { get; private set; }
 
         public FrmLogin()
         {
@@ -46,7 +47,7 @@ namespace CloudLauncher.forms.auth
                 dropAccounts.SelectedIndex = 0;
 
                 // Load offline accounts from registry
-                string offlineAccounts = RegistryConfig.GetUserPreference<string>("OfflineAccounts", "");
+                string offlineAccounts = RegistryConfig.GetUserPreference<string>("OfflineAccounts", string.Empty);
                 if (!string.IsNullOrEmpty(offlineAccounts))
                 {
                     foreach (string username in offlineAccounts.Split(','))
@@ -81,7 +82,7 @@ namespace CloudLauncher.forms.auth
                 }
 
                 // Select the last used account if available
-                string lastUsername = RegistryConfig.GetUserPreference<string>("LastUsername", null);
+                string lastUsername = RegistryConfig.GetUserPreference<string>("LastUsername");
                 if (!string.IsNullOrEmpty(lastUsername))
                 {
                     // Try to find exact match first
@@ -105,6 +106,9 @@ namespace CloudLauncher.forms.auth
                     dropAccounts.SelectedIndex = 0;
                 }
 
+                // Restore keep logged in state
+                cbKeepLogin.Checked = RegistryConfig.GetUserPreference("KeepLoggedIn", false);
+
                 Logger.Info($"Loaded {accounts.Count} saved accounts");
             }
             catch (Exception ex)
@@ -123,23 +127,32 @@ namespace CloudLauncher.forms.auth
                 // Save the account info to registry
                 RegistryConfig.SaveUserPreference("LastUsername", session.Username);
                 RegistryConfig.SaveUserPreference("LastUUID", session.UUID);
+                RegistryConfig.SaveUserPreference("KeepLoggedIn", cbKeepLogin.Checked);
+                RegistryConfig.SaveUserPreference("WasOffline", session.AccessToken == "0"); // "0" indicates offline mode
+
 
                 // Create and show GameLaunch form with the session
                 GameLaunch gameLaunch = new GameLaunch(session);
-                gameLaunch.Show();
+                gameLaunch.FormClosed += (s, args) =>
+                {
+                    if (!IsLoggingOut) // Only show login form if not logging out
+                    {
+                        this.Show();
+                        InitializeAccountSelector(); // Refresh the account list
 
-                this.DialogResult = DialogResult.OK;
-                this.Hide();
+                    }
+                };
+                gameLaunch.Show();
+                this.Hide(); // Hide the login form
             }
         }
-
 
         private void dropAccounts_SelectedIndexChanged(object sender, EventArgs e)
         {
             // Show/hide username textbox based on offline mode selection
-            txtOfflineName.Visible = dropAccounts.SelectedIndex == 0;
-            lblOfflineUsername.Visible = dropAccounts.SelectedIndex == 0;
-            btnRemove.Visible = dropAccounts.SelectedIndex > 0;
+            txtOfflineName.Enabled = dropAccounts.SelectedIndex == 0;
+            lblOfflineUsername.Enabled = dropAccounts.SelectedIndex == 0;
+            btnRemove.Enabled = dropAccounts.SelectedIndex > 0;
         }
 
         private async void btnLogin_Click(object sender, EventArgs e)
@@ -168,7 +181,7 @@ namespace CloudLauncher.forms.auth
                     Logger.Info($"Created offline session for user: {username}");
 
                     // Save offline account
-                    string offlineAccounts = RegistryConfig.GetUserPreference<string>("OfflineAccounts", "");
+                    string offlineAccounts = RegistryConfig.GetUserPreference<string>("OfflineAccounts", string.Empty);
                     if (!offlineAccounts.Contains(username))
                     {
                         offlineAccounts = string.IsNullOrEmpty(offlineAccounts) ? username : offlineAccounts + "," + username;
@@ -270,6 +283,16 @@ namespace CloudLauncher.forms.auth
                         Logger.Info($"Successfully removed account: {selectedAccount.Identifier}");
                     }
 
+                    // Clear auto-login if this was the last logged in account
+                    string lastUsername = RegistryConfig.GetUserPreference<string>("LastUsername");
+                    if (selectedItem.Contains(lastUsername))
+                    {
+                        RegistryConfig.SaveUserPreference("KeepLoggedIn", false);
+                        RegistryConfig.DeleteValue("LastUsername");
+                        RegistryConfig.DeleteValue("LastUUID");
+                        RegistryConfig.DeleteValue("WasOffline");
+                    }
+
                     // Reload accounts
                     InitializeAccountSelector();
                 }
@@ -279,6 +302,14 @@ namespace CloudLauncher.forms.auth
                 Logger.Error($"Failed to remove account: {ex.Message}");
                 Alert.Error("Failed to remove account. Please try again.");
             }
+        }
+
+        private void btnSwitchInstance_Click(object sender, EventArgs e)
+        {
+            RegistryConfig.SaveUserPreference("LastInstanceDirectory", "null");
+            RegistryConfig.SaveUserPreference("RememberLastInstance", false);
+            IsLoggingOut = true;
+            Program.restart();
         }
     }
 }

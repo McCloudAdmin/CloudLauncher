@@ -69,7 +69,6 @@ namespace CloudLauncher.utils
             }
             return defaultValue;
         }
-
         public static void DeleteValue(string key)
         {
             try
@@ -78,8 +77,11 @@ namespace CloudLauncher.utils
                 {
                     if (regKey != null)
                     {
-                        regKey.DeleteValue(key, false);
-                        Logger.Debug($"Deleted registry value: {key}");
+                        if (regKey.GetValue(key) != null)
+                        {
+                            regKey.DeleteValue(key, false);
+                            Logger.Warn($"Deleted registry value: {key}");
+                        }
                     }
                 }
             }
@@ -133,41 +135,6 @@ namespace CloudLauncher.utils
             int x = GetValue($"{formName}_X", defaultPosition.X);
             int y = GetValue($"{formName}_Y", defaultPosition.Y);
             return new Point(x, y);
-        }
-
-        public static void SaveWindowSize(string formName, int width, int height)
-        {
-            SetValue($"{formName}_Width", width);
-            SetValue($"{formName}_Height", height);
-        }
-
-        public static Size GetWindowSize(string formName, Size defaultSize)
-        {
-            int width = GetValue($"{formName}_Width", defaultSize.Width);
-            int height = GetValue($"{formName}_Height", defaultSize.Height);
-            return new Size(width, height);
-        }
-
-        // Theme Management
-        public static void SaveTheme(string themeName)
-        {
-            SetValue("Theme", themeName);
-        }
-
-        public static string GetTheme(string defaultTheme = "default")
-        {
-            return GetValue("Theme", defaultTheme);
-        }
-
-        // Path Management
-        public static void SaveLastUsedPath(string path)
-        {
-            SetValue("LastUsedPath", path);
-        }
-
-        public static string GetLastUsedPath(string defaultPath = "")
-        {
-            return GetValue("LastUsedPath", defaultPath);
         }
 
         // User Preferences
