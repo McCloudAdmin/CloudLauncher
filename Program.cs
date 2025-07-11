@@ -73,19 +73,23 @@ namespace CloudLauncher
             {
                 // Try auto-login first
                 bool keepLoggedIn = RegistryConfig.GetUserPreference("KeepLoggedIn", false);
+                Logger.Info($"Auto-login enabled: {keepLoggedIn}");
                 if (keepLoggedIn)
                 {
                     string lastUsername = RegistryConfig.GetUserPreference<string>("LastUsername");
                     string lastUUID = RegistryConfig.GetUserPreference<string>("LastUUID");
                     bool wasOffline = RegistryConfig.GetUserPreference("WasOffline", false);
 
-                    if (!string.IsNullOrEmpty(lastUsername) && !string.IsNullOrEmpty(lastUUID))
+                    Logger.Info($"Auto-login data - Username: {lastUsername}, UUID: {(string.IsNullOrEmpty(lastUUID) ? "empty" : "present")}, WasOffline: {wasOffline}");
+
+                    if (!string.IsNullOrEmpty(lastUsername) && (wasOffline || !string.IsNullOrEmpty(lastUUID)))
                     {
                         try
                         {
                             MSession session = null;
                             if (wasOffline)
                             {
+                                Logger.Info("Attempting offline auto-login");
                                 session = MSession.CreateOfflineSession(lastUsername);
                                 
                                 // Update plugin manager with session and publish login event
@@ -97,23 +101,28 @@ namespace CloudLauncher
                                     IsOffline = true
                                 });
                                 
+                                Logger.Info("Offline auto-login successful, launching game");
                                 var gameLaunch = new GameLaunch(session);
                                 Application.Run(gameLaunch);
                                 return;
                             }
                             else
                             {                
+                                Logger.Info("Attempting online auto-login");
                                 var loginHandler = JELoginHandlerBuilder.BuildDefault();
                                 var accounts = loginHandler.AccountManager.GetAccounts();
+                                Logger.Info($"Found {accounts.Count} saved accounts for auto-login");
                                 
                                 foreach (var account in accounts)
                                 {
                                     try
                                     {
+                                        Logger.Info($"Trying silent auth for account: {account.Identifier}");
                                         // Use synchronous call to avoid handle issues
                                         session = loginHandler.AuthenticateSilently(account).GetAwaiter().GetResult();
                                         if (session != null && session.Username == lastUsername)
                                         {
+                                            Logger.Info("Online auto-login successful, launching game");
                                             // Update plugin manager with session and publish login event
                                             PluginManager.Instance.UpdateCurrentSession(session);
                                             PluginManager.Instance.GetEventManager().Publish(new UserLoginEvent
@@ -128,12 +137,14 @@ namespace CloudLauncher
                                             return;
                                         }
                                     }
-                                    catch
+                                    catch (Exception ex)
                                     {
+                                        Logger.Warning($"Silent auth failed for account {account.Identifier}: {ex.Message}");
                                         // Try next account
                                         continue;
                                     }
                                 }
+                                Logger.Warning("No matching account found for auto-login");
                             }
                         }
                         catch (Exception ex)
@@ -141,6 +152,14 @@ namespace CloudLauncher
                             Logger.Error($"Auto-login failed: {ex.Message}");
                         }
                     }
+                    else
+                    {
+                        Logger.Info("Auto-login conditions not met - either username is empty or (UUID is empty and not offline mode)");
+                    }
+                }
+                else
+                {
+                    Logger.Info("Auto-login is disabled");
                 }
 
                 // If auto-login failed or wasn't enabled, show login form
@@ -156,7 +175,7 @@ namespace CloudLauncher
                         string uuid = RegistryConfig.GetUserPreference<string>("LastUUID");
                         bool wasOffline = RegistryConfig.GetUserPreference("WasOffline", false);
                         
-                        if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(uuid))
+                        if (!string.IsNullOrEmpty(username) && (wasOffline || !string.IsNullOrEmpty(uuid)))
                         {
                             MSession session;
                             if (wasOffline)

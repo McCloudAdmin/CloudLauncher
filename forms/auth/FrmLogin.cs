@@ -123,11 +123,17 @@ namespace CloudLauncher.forms.auth
             {
                 Logger.Info($"Successfully authenticated as {session.Username}");
 
+                // Determine if this is an offline session
+                // Offline sessions typically have a specific AccessToken pattern or the UserType is empty/null
+                bool isOfflineSession = session.UserType == null || session.UserType == "" || session.UserType == "legacy";
+                
+                Logger.Info($"Session details - UserType: {session.UserType}, AccessToken: {(session.AccessToken?.Length > 10 ? session.AccessToken.Substring(0, 10) + "..." : session.AccessToken)}, IsOffline: {isOfflineSession}");
+
                 // Save the account info to registry
                 RegistryConfig.SaveUserPreference("LastUsername", session.Username);
                 RegistryConfig.SaveUserPreference("LastUUID", session.UUID);
                 RegistryConfig.SaveUserPreference("KeepLoggedIn", cbKeepLogin.Checked);
-                RegistryConfig.SaveUserPreference("WasOffline", session.AccessToken == "0"); // "0" indicates offline mode
+                RegistryConfig.SaveUserPreference("WasOffline", isOfflineSession);
 
                 // Set DialogResult to OK so the ShowDialog() call completes properly
                 this.DialogResult = DialogResult.OK;

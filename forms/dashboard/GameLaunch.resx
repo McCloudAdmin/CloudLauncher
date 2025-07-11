@@ -123,6 +123,16 @@
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>37</value>
   </metadata>
+  <data name="richTextBox1.Text" xml:space="preserve">
+    <value>• Added user authentication with Microsoft and offline accounts
+• Added version management with support for release, snapshot, beta and alpha versions
+• Added server quick-join functionality
+• Added customizable RAM allocation
+• Added Java path selection
+• Added screen resolution settings
+• Added plugin system for extensibility
+• Added auto-update functionality</value>
+  </data>
   <data name="animation1.BlindCoeff" mimetype="application/x-microsoft.net.object.binary.base64">
     <value>
         AAEAAAD/////AQAAAAAAAAAMAgAAAFFTeXN0ZW0uRHJhd2luZywgVmVyc2lvbj00LjAuMC4wLCBDdWx0

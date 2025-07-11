@@ -1,6 +1,6 @@
-﻿using CloudLauncher.utils;
-using CloudLauncher.plugins;
+﻿using CloudLauncher.plugins;
 using CloudLauncher.plugins.Events;
+using CloudLauncher.utils;
 using CmlLib.Core;
 using CmlLib.Core.Auth;
 using CmlLib.Core.ProcessBuilder;
@@ -440,6 +440,8 @@ namespace CloudLauncher.forms.dashboard
         {
             // Save settings when form is loaded (in case of any default values)
             LoadSettings();
+
+            Pages.SetPage(PageHome);
         }
 
         private void txtCustomArgs_TextChanged(object sender, EventArgs e)
@@ -593,6 +595,9 @@ namespace CloudLauncher.forms.dashboard
 
                 Logger.Info($"Launched Minecraft {version.Name} with {launchOption.MaximumRamMb}MB RAM");
 
+                // Update launch statistics
+                UpdateLaunchStatistics();
+
                 // Publish post-launch event
                 PluginManager.Instance.GetEventManager().Publish(new GameLaunchedEvent
                 {
@@ -685,6 +690,8 @@ namespace CloudLauncher.forms.dashboard
         private void btnHome_Click(object sender, EventArgs e)
         {
             Pages.SetPage(PageHome);
+            // Refresh home page content when navigating to it
+            RefreshPluginList();
         }
 
         private async Task LoadUserAvatarAsync(string username)
@@ -771,11 +778,120 @@ namespace CloudLauncher.forms.dashboard
                 // Initialize system tray icon
                 InitializeTrayIcon();
 
+                // Initialize home page content
+                InitializeHomePage();
+
                 Logger.Info("New settings initialized successfully");
             }
             catch (Exception ex)
             {
                 Logger.Error($"Failed to initialize new settings: {ex.Message}");
+            }
+        }
+
+        private void InitializeHomePage()
+        {
+            try
+            {
+                // Load and display plugin information
+                RefreshPluginList();
+
+                Logger.Info("Home page initialized successfully");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to initialize home page: {ex.Message}");
+            }
+        }
+
+        private void RefreshPluginList()
+        {
+            try
+            {
+                lstPlugins.Items.Clear();
+
+                var pluginManager = PluginManager.Instance;
+                var plugins = pluginManager.GetAllPlugins();
+
+                if (plugins.Count == 0)
+                {
+                    lstPlugins.Items.Add("No plugins installed");
+                    lblPluginStatus.Text = "No plugins found. Install plugins to extend functionality.";
+                }
+                else
+                {
+                    foreach (var plugin in plugins)
+                    {
+                        var status = pluginManager.IsPluginEnabled(plugin.PluginId) ? "Enabled" : "Disabled";
+                        lstPlugins.Items.Add($"{plugin.Name} v{plugin.Version} - {status}");
+                    }
+
+                    int enabledCount = plugins.Count(p => pluginManager.IsPluginEnabled(p.PluginId));
+                    lblPluginStatus.Text = $"{plugins.Count} plugins installed, {enabledCount} enabled";
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to refresh plugin list: {ex.Message}");
+                lblPluginStatus.Text = "Error loading plugins";
+            }
+        }
+
+        private void UpdateLaunchStatistics()
+        {
+            try
+            {
+                // Increment launch count
+                int totalLaunches = RegistryConfig.GetUserPreference("TotalLaunches", 0) + 1;
+                RegistryConfig.SaveUserPreference("TotalLaunches", totalLaunches);
+
+                // Update last launch time
+                RegistryConfig.SaveUserPreference("LastLaunchTime", DateTime.Now.ToString());
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to update launch statistics: {ex.Message}");
+            }
+        }
+
+        private async void btnRefreshPlugins_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Reload plugins
+                await PluginManager.Instance.LoadAllPluginsAsync();
+
+                // Update the display
+                RefreshPluginList();
+
+                Alert.Info("Plugins refreshed successfully!");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to refresh plugins: {ex.Message}");
+                Alert.Error("Failed to refresh plugins. Check the logs for details.");
+            }
+        }
+
+        private void btnOpenPluginFolder_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string pluginPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                                               ".cloudlauncher", "plugins");
+
+                if (!Directory.Exists(pluginPath))
+                {
+                    Directory.CreateDirectory(pluginPath);
+                }
+
+                System.Diagnostics.Process.Start("explorer.exe", pluginPath);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to open plugin folder: {ex.Message}");
+                Alert.Error("Failed to open plugin folder. Check the logs for details.");
             }
         }
 
@@ -971,7 +1087,12 @@ namespace CloudLauncher.forms.dashboard
             Application.Exit();
         }
 
-        protected override void OnFormClosing(FormClosingEventArgs e)
+        private void btnLauncherPlugins_Click(object sender, EventArgs e)
+        {
+            Pages.SetPage(PagePlugins);
+        }
+
+        private void GameLaunch_FormClosing(object sender, FormClosingEventArgs e)
         {
             // Handle close to tray
             if (cbCloseToTray?.Checked == true && e.CloseReason == CloseReason.UserClosing)
@@ -986,7 +1107,6 @@ namespace CloudLauncher.forms.dashboard
             else
             {
                 _trayIcon?.Dispose();
-                base.OnFormClosing(e);
             }
         }
     }
