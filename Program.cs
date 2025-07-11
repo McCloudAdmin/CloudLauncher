@@ -56,13 +56,13 @@ namespace CloudLauncher
                 ResourceExtractor.ExtractEmbeddedResources();
                 
                 // Cleanup old versions (keep 3 latest)
-                VersionManager.CleanupOldVersions(3);
+                VersionManager.CleanupOldVersions(6);
 
                 // Initialize plugin manager
                 PluginManager.Instance.Initialize();
                 
                 // Load plugins asynchronously
-                _ = Task.Run(async () => await PluginManager.Instance.LoadAllPluginsAsync());
+                _ = Task.Run(() => PluginManager.Instance.LoadAllPlugins());
             }
             catch (Exception ex)
             {

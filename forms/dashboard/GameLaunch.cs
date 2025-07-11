@@ -855,12 +855,12 @@ namespace CloudLauncher.forms.dashboard
             }
         }
 
-        private async void btnRefreshPlugins_Click(object sender, EventArgs e)
+        private void btnRefreshPlugins_Click(object sender, EventArgs e)
         {
             try
             {
                 // Reload plugins
-                await PluginManager.Instance.LoadAllPluginsAsync();
+                PluginManager.Instance.LoadAllPlugins();
 
                 // Update the display
                 RefreshPluginList();

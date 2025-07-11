@@ -77,7 +77,7 @@ namespace CloudLauncher.plugins
         /// <summary>
         /// Load all plugins from the plugins directory
         /// </summary>
-        public async Task LoadAllPluginsAsync()
+        public void LoadAllPlugins()
         {
             Logger.Info("Loading plugins from directory: " + _pluginsDirectory);
 
@@ -94,7 +94,7 @@ namespace CloudLauncher.plugins
             {
                 try
                 {
-                    if (await LoadPluginAsync(dllFile))
+                    if (LoadPlugin(dllFile))
                     {
                         loadedCount++;
                     }
@@ -108,7 +108,7 @@ namespace CloudLauncher.plugins
             Logger.Info($"Loaded {loadedCount} plugins successfully");
 
             // Resolve dependencies and enable plugins
-            await ResolveDependenciesAndEnablePluginsAsync();
+            ResolveDependenciesAndEnablePlugins();
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace CloudLauncher.plugins
         /// </summary>
         /// <param name="dllPath">Path to the plugin DLL</param>
         /// <returns>True if plugin was loaded successfully</returns>
-        public async Task<bool> LoadPluginAsync(string dllPath)
+        public bool LoadPlugin(string dllPath)
         {
             try
             {
@@ -130,7 +130,7 @@ namespace CloudLauncher.plugins
 
                 // Load the assembly
                 var assembly = Assembly.LoadFrom(dllPath);
-                
+
                 // Find all types that implement IPlugin
                 var pluginTypes = assembly.GetTypes()
                     .Where(type => type.IsClass && !type.IsAbstract && typeof(IPlugin).IsAssignableFrom(type))
@@ -148,7 +148,7 @@ namespace CloudLauncher.plugins
                     {
                         // Create plugin instance
                         var plugin = (IPlugin)Activator.CreateInstance(pluginType);
-                        
+
                         // Check if plugin is already loaded
                         if (_loadedPlugins.ContainsKey(plugin.PluginId))
                         {
@@ -165,7 +165,7 @@ namespace CloudLauncher.plugins
 
                         // Create plugin context
                         var context = new PluginContext(plugin.PluginId, this, _eventManager);
-                        
+
                         // Store plugin and context
                         _loadedPlugins[plugin.PluginId] = plugin;
                         _pluginContexts[plugin.PluginId] = context;
@@ -495,7 +495,7 @@ namespace CloudLauncher.plugins
             }
         }
 
-        private async Task ResolveDependenciesAndEnablePluginsAsync()
+        private void ResolveDependenciesAndEnablePlugins()
         {
             Logger.Info("Resolving plugin dependencies and enabling plugins");
 
