@@ -15,7 +15,7 @@ for %%R in (%RIDS%) do (
     echo.
     echo ===== Publishing for %%R =====
     dotnet publish %PROJECT% -c %CONFIG% -r %%R --self-contained true ^
-        /p:PublishSingleFile=false ^
+        /p:PublishSingleFile=true ^
         --output %OUTPUT_DIR%\%%R
 )
 

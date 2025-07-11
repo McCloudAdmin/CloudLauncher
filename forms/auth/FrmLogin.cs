@@ -12,7 +12,6 @@ namespace CloudLauncher.forms.auth
         private JELoginHandler loginHandler;
         private bool isAuthenticating = false;
         private List<IXboxGameAccount> savedAccounts = new List<IXboxGameAccount>();
-        public bool IsLoggingOut { get; private set; }
 
         public FrmLogin()
         {
@@ -130,20 +129,11 @@ namespace CloudLauncher.forms.auth
                 RegistryConfig.SaveUserPreference("KeepLoggedIn", cbKeepLogin.Checked);
                 RegistryConfig.SaveUserPreference("WasOffline", session.AccessToken == "0"); // "0" indicates offline mode
 
-
-                // Create and show GameLaunch form with the session
-                GameLaunch gameLaunch = new GameLaunch(session);
-                gameLaunch.FormClosed += (s, args) =>
-                {
-                    if (!IsLoggingOut) // Only show login form if not logging out
-                    {
-                        this.Show();
-                        InitializeAccountSelector(); // Refresh the account list
-
-                    }
-                };
-                gameLaunch.Show();
-                this.Hide(); // Hide the login form
+                // Set DialogResult to OK so the ShowDialog() call completes properly
+                this.DialogResult = DialogResult.OK;
+                
+                // Close the login form (this will end the ShowDialog() call in Program.cs)
+                this.Close();
             }
         }
 
@@ -302,14 +292,6 @@ namespace CloudLauncher.forms.auth
                 Logger.Error($"Failed to remove account: {ex.Message}");
                 Alert.Error("Failed to remove account. Please try again.");
             }
-        }
-
-        private void btnSwitchInstance_Click(object sender, EventArgs e)
-        {
-            RegistryConfig.SaveUserPreference("LastInstanceDirectory", "null");
-            RegistryConfig.SaveUserPreference("RememberLastInstance", false);
-            IsLoggingOut = true;
-            Program.restart();
         }
     }
 }

@@ -28,12 +28,6 @@ namespace CloudLauncher.utils
                 {
                     var defaultStyles = new Dictionary<string, Dictionary<string, string>>
                     {
-                        ["Global"] = new Dictionary<string, string>
-                        {
-                            ["BackColor"] = "30,30,30",
-                            ["ForeColor"] = "255,255,255",
-                            ["Font"] = "Segoe UI, 9pt"
-                        },
                         ["FrmMain"] = new Dictionary<string, string>
                         {
                             ["BackColor"] = "30,30,30",
@@ -42,44 +36,11 @@ namespace CloudLauncher.utils
                             ["StartPosition"] = "CenterScreen",
                             ["Size"] = "800,600"
                         },
-                        ["UserNavigationBar"] = new Dictionary<string, string>
-                        {
-                            ["BackColor"] = "40,40,40",
-                            ["Dock"] = "Top",
-                            ["Height"] = "30"
-                        },
-                        ["FrmMain.lblAppName"] = new Dictionary<string, string>
-                        {
-                            ["Text"] = "CloudLauncher (DEV)",
-                            ["ForeColor"] = "255,255,255",
-                            ["Font"] = "Segoe UI, 10pt, style=Bold",
-                            ["Location"] = "10,5"
-                        },
-                        ["FrmMain.lblClose"] = new Dictionary<string, string>
-                        {
-                            ["ForeColor"] = "255,255,255",
-                            ["Font"] = "Segoe UI, 10pt",
-                            ["Location"] = "770,5",
-                            ["Cursor"] = "Hand"
-                        },
-                        ["FrmMain.lblMinimize"] = new Dictionary<string, string>
-                        {
-                            ["ForeColor"] = "255,255,255",
-                            ["Font"] = "Segoe UI, 10pt",
-                            ["Location"] = "740,5",
-                            ["Cursor"] = "Hand"
-                        },
-                        ["lblAppName"] = new Dictionary<string, string>
-                        {
-                            ["ForeColor"] = "255,255,255",
-                            ["Font"] = "Segoe UI, 10pt"
-                        }
                     };
 
                     string jsonContent = JsonConvert.SerializeObject(defaultStyles, Formatting.Indented);
                     File.WriteAllText(stylepath, jsonContent);
                     Logger.Warning("[THEME] Style file does not exist! Created default styles.");
-                    Program.restart();
                 }
             }
             catch (Exception ex)

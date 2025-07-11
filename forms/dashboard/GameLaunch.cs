@@ -100,7 +100,7 @@ namespace CloudLauncher.forms.dashboard
             LoadSettings();
 
             lblUsername.Text = _currentSession?.Username ?? "Guest";
-            lblType.Text = _currentSession?.UserType == "msa" ? "(Premium)" : "(Cracked)";
+            lblType.Text = (_currentSession?.UserType == "msa" ? "(Premium)" : "(Cracked)") + $" - v{Program.appVersion}";
 
             // Load user avatar from mc-heads.net
             if (!string.IsNullOrEmpty(_currentSession?.Username))
@@ -336,10 +336,10 @@ namespace CloudLauncher.forms.dashboard
                 Logger.Info($"Loaded Java path: {txtGameJavaPath.Text}");
 
                 // Load screen settings
-                txtGameScreenHeight.Text = RegistryConfig.GetUserPreference("ScreenWidth", 1280).ToString();
+                txtGameScreenWidth.Text = RegistryConfig.GetUserPreference("ScreenWidth", 1280).ToString();
                 txtGameScreenHeight.Text = RegistryConfig.GetUserPreference("ScreenHeight", 720).ToString();
                 cbFullScreen.Checked = RegistryConfig.GetUserPreference("FullScreen", false);
-                Logger.Info($"Loaded screen settings: {txtGameScreenHeight.Text}x{txtGameScreenHeight.Text}, FullScreen: {cbFullScreen.Checked}");
+                Logger.Info($"Loaded screen settings: {txtGameScreenWidth.Text}x{txtGameScreenHeight.Text}, FullScreen: {cbFullScreen.Checked}");
 
                 // Load server settings
                 txtJoinServerIP.Text = RegistryConfig.GetUserPreference<string>("ServerIP", string.Empty);
@@ -398,7 +398,7 @@ namespace CloudLauncher.forms.dashboard
             errorMessage = string.Empty;
 
             // Validate screen width
-            if (!int.TryParse(txtGameScreenHeight.Text, out int width) || width <= 0)
+            if (!int.TryParse(txtGameScreenWidth.Text, out int width) || width <= 0)
             {
                 errorMessage = "Please enter a valid screen width.";
                 return false;
@@ -444,7 +444,7 @@ namespace CloudLauncher.forms.dashboard
         // Add event handlers for other settings that should be saved automatically
         private void txtGameScreenWidth_TextChanged(object sender, EventArgs e)
         {
-            RegistryConfig.SaveUserPreference("ScreenWidth", int.Parse(txtGameScreenHeight.Text));
+            RegistryConfig.SaveUserPreference("ScreenWidth", int.Parse(txtGameScreenWidth.Text));
         }
 
         private void txtGameScreenHeight_TextChanged(object sender, EventArgs e)
@@ -508,7 +508,7 @@ namespace CloudLauncher.forms.dashboard
                 lblReady.Enabled = true;
                 lblReady.Text = "Preparing to launch...";
 
-                string IconPath = Path.Combine(Application.StartupPath, "assets", "logo.ico");
+                string IconPath = ResourceExtractor.GetExtractedAssetPath("logo.ico");
 
                 var version = dDVersions.SelectedItem as IVersionMetadata;
                 if (version == null)
@@ -531,7 +531,7 @@ namespace CloudLauncher.forms.dashboard
                     JavaPath = _currentJavaPath,
 
                     // Screen settings
-                    ScreenWidth = int.Parse(txtGameScreenHeight.Text),
+                    ScreenWidth = int.Parse(txtGameScreenWidth.Text),
                     ScreenHeight = int.Parse(txtGameScreenHeight.Text),
                     FullScreen = cbFullScreen.Checked,
 
@@ -577,30 +577,16 @@ namespace CloudLauncher.forms.dashboard
 
         private void btnLogout_Click(object sender, EventArgs e)
         {
-            this.Hide();
             // Clear session and settings
             _currentSession = null;
             RegistryConfig.SaveUserPreference("LastUsername", "");
             RegistryConfig.SaveUserPreference("LastUUID", "");
             RegistryConfig.SaveUserPreference("KeepLoggedIn", false);
             RegistryConfig.SaveUserPreference("WasOffline", false);
+            RegistryConfig.SaveUserPreference("RestartForLogout", true); // Signal to restart and show login
 
-            // Show login form
-            using (var loginForm = new FrmLogin())
-            {
-                if (loginForm.ShowDialog() == DialogResult.OK)
-                {
-                    // Get the session from registry
-                    string username = RegistryConfig.GetUserPreference<string>("LastUsername", null);
-                    string uuid = RegistryConfig.GetUserPreference<string>("LastUUID", null);
-
-                    if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(uuid))
-                    {
-                        _currentSession = new MSession(username, uuid, "0");
-                        LoadSettings();
-                    }
-                }
-            }
+            // Close this form, which will return control to Program.cs
+            this.Close();
         }
 
         private void btnPickJava_Click(object sender, EventArgs e)

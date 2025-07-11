@@ -3,9 +3,7 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using CloudLauncher.utils;
 using CloudLauncher.Components;
-using CloudLauncher.forms.ui;
 using CloudLauncher.forms.auth;
-using System.Linq;
 using CloudLauncher.forms.dashboard;
 using CmlLib.Core.Auth;
 using CmlLib.Core.Auth.Microsoft;
@@ -16,13 +14,11 @@ namespace CloudLauncher
     {
         public static string appWorkDir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "MythicalSystems",
-            "CloudLauncher"
+            ".cloudlauncher"
         );
         public static string appVersion = "1.0.0";
         public static string appName = "CloudLauncher";
         public static string appAuthor = "CloudLauncher";
-        public static InstanceConfig selectedInstance;
 
         /// <summary>
         ///  The main entry point for the application.
@@ -35,114 +31,129 @@ namespace CloudLauncher
 
             try
             {
-                bool shouldRestart = false;
-
-                do
+                // Initialize version management (install/update if needed)
+                VersionManager.InitializeVersionManagement();
+                
+                // If we're not running from the installed location, restart from there
+                if (!VersionManager.IsRunningFromInstalledLocation())
                 {
-                    shouldRestart = false;
+                    Logger.Info("Restarting from installed location...");
+                    VersionManager.RestartFromInstalledLocation();
+                    return;
+                }
 
-                    // Check if we have a remembered instance first
-                    bool rememberInstance = RegistryConfig.GetUserPreference("RememberLastInstance", false);
-                    string lastInstanceDir = RegistryConfig.GetUserPreference<string>("LastInstanceDirectory");
-                    
-                    InstanceConfig selectedInstance = null;
-                    
-                    if (rememberInstance && !string.IsNullOrEmpty(lastInstanceDir))
-                    {
-                        // Try to load the remembered instance
-                        var instancesManager = new InstancesManager();
-                        var instances = instancesManager.GetInstances();
-                        selectedInstance = instances.FirstOrDefault(i => 
-                            Path.GetDirectoryName(i.ConfigPath).Equals(lastInstanceDir, StringComparison.OrdinalIgnoreCase));
-                    }
+                // Extract embedded resources (assets and docs) to working directory
+                ResourceExtractor.ExtractEmbeddedResources();
+                
+                // Cleanup old versions (keep 3 latest)
+                VersionManager.CleanupOldVersions(3);
+            }
+            catch (Exception ex)
+            {
+                Logger.Warning($"Initialization warning: {ex.Message}");
+            }
 
-                    if (selectedInstance == null)
+            try
+            {
+                // Try auto-login first
+                bool keepLoggedIn = RegistryConfig.GetUserPreference("KeepLoggedIn", false);
+                if (keepLoggedIn)
+                {
+                    string lastUsername = RegistryConfig.GetUserPreference<string>("LastUsername");
+                    string lastUUID = RegistryConfig.GetUserPreference<string>("LastUUID");
+                    bool wasOffline = RegistryConfig.GetUserPreference("WasOffline", false);
+
+                    if (!string.IsNullOrEmpty(lastUsername) && !string.IsNullOrEmpty(lastUUID))
                     {
-                        // Show instance selector if no remembered instance
-                        using (var instanceSelector = new FrmInstanceSelector())
+                        try
                         {
-                            if (instanceSelector.ShowDialog() != DialogResult.OK)
+                            MSession session = null;
+                            if (wasOffline)
                             {
-                                Application.Exit();
+                                session = MSession.CreateOfflineSession(lastUsername);
+                                var gameLaunch = new GameLaunch(session);
+                                Application.Run(gameLaunch);
                                 return;
                             }
-                            selectedInstance = instanceSelector.SelectedInstance;
-                        }
-                    }
-
-                    // Try auto-login first
-                    bool keepLoggedIn = RegistryConfig.GetUserPreference("KeepLoggedIn", false);
-                    if (keepLoggedIn)
-                    {
-                        string lastUsername = RegistryConfig.GetUserPreference<string>("LastUsername");
-                        string lastUUID = RegistryConfig.GetUserPreference<string>("LastUUID");
-                        bool wasOffline = RegistryConfig.GetUserPreference("WasOffline", false);
-
-                        if (!string.IsNullOrEmpty(lastUsername) && !string.IsNullOrEmpty(lastUUID))
-                        {
-                            try
-                            {
-                                MSession session = null;
-                                if (wasOffline)
+                            else
+                            {                
+                                var loginHandler = JELoginHandlerBuilder.BuildDefault();
+                                var accounts = loginHandler.AccountManager.GetAccounts();
+                                
+                                foreach (var account in accounts)
                                 {
-                                    session = MSession.CreateOfflineSession(lastUsername);
-                                    var gameLaunch = new GameLaunch(session);
-                                    Application.Run(gameLaunch);
-                                    continue;
-                                }
-                                else
-                                {                
-                                    var loginHandler = JELoginHandlerBuilder.BuildDefault();
-                                    var accounts = loginHandler.AccountManager.GetAccounts();
-                                    
-                                    bool autoLoginSuccessful = false;
-                                    foreach (var account in accounts)
+                                    try
                                     {
-                                        try
+                                        // Use synchronous call to avoid handle issues
+                                        session = loginHandler.AuthenticateSilently(account).GetAwaiter().GetResult();
+                                        if (session != null && session.Username == lastUsername)
                                         {
-                                            // Use synchronous call to avoid handle issues
-                                            session = loginHandler.AuthenticateSilently(account).GetAwaiter().GetResult();
-                                            if (session != null && session.Username == lastUsername)
-                                            {
-                                                var gameLaunch = new GameLaunch(session);
-                                                Application.Run(gameLaunch);
-                                                autoLoginSuccessful = true;
-                                                break;
-                                            }
-                                        }
-                                        catch
-                                        {
-                                            // Try next account
-                                            continue;
+                                            var gameLaunch = new GameLaunch(session);
+                                            Application.Run(gameLaunch);
+                                            return;
                                         }
                                     }
-
-                                    if (autoLoginSuccessful)
+                                    catch
                                     {
+                                        // Try next account
                                         continue;
                                     }
                                 }
                             }
-                            catch (Exception ex)
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Error($"Auto-login failed: {ex.Message}");
+                        }
+                    }
+                }
+
+                // If auto-login failed or wasn't enabled, show login form
+                while (true)
+                {
+                    var loginForm = new FrmLogin();
+                    var result = loginForm.ShowDialog();
+                    
+                    if (result == DialogResult.OK)
+                    {
+                        // Get the session info from registry (saved by HandleSuccessfulLogin)
+                        string username = RegistryConfig.GetUserPreference<string>("LastUsername");
+                        string uuid = RegistryConfig.GetUserPreference<string>("LastUUID");
+                        bool wasOffline = RegistryConfig.GetUserPreference("WasOffline", false);
+                        
+                        if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(uuid))
+                        {
+                            MSession session;
+                            if (wasOffline)
                             {
-                                Logger.Error($"Auto-login failed: {ex.Message}");
+                                session = MSession.CreateOfflineSession(username);
+                            }
+                            else
+                            {
+                                session = new MSession(username, uuid, "access_token"); // Create session with saved data
+                            }
+                            
+                            var gameLaunch = new GameLaunch(session);
+                            Application.Run(gameLaunch);
+                            
+                            // After GameLaunch closes, check if we should restart (logout) or exit
+                            bool shouldRestart = RegistryConfig.GetUserPreference("RestartForLogout", false);
+                            if (shouldRestart)
+                            {
+                                RegistryConfig.SaveUserPreference("RestartForLogout", false); // Reset flag
+                                continue; // Show login form again
+                            }
+                            else
+                            {
+                                break; // Exit application
                             }
                         }
                     }
-
-                    // If auto-login failed or wasn't enabled, show login form
-                    var loginForm = new FrmLogin();
-                    if (loginForm.ShowDialog() == DialogResult.OK)
-                    {
-                        shouldRestart = loginForm.IsLoggingOut;
-                    }
                     else
                     {
-                        Application.Exit();
-                        return;
+                        break; // User cancelled login, exit application
                     }
-
-                } while (shouldRestart);
+                }
             }
             catch (Exception ex)
             {
