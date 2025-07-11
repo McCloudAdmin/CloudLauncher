@@ -1,10 +1,13 @@
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using CloudLauncher.utils;
 using CloudLauncher.Components;
 using CloudLauncher.forms.auth;
 using CloudLauncher.forms.dashboard;
+using CloudLauncher.plugins;
+using CloudLauncher.plugins.Events;
 using CmlLib.Core.Auth;
 using CmlLib.Core.Auth.Microsoft;
 
@@ -31,6 +34,13 @@ namespace CloudLauncher
 
             try
             {
+                // Check for multiple instances
+                if (!CheckMultipleInstances())
+                {
+                    Logger.Info("Another instance is already running and multiple instances are disabled.");
+                    return;
+                }
+
                 // Initialize version management (install/update if needed)
                 VersionManager.InitializeVersionManagement();
                 
@@ -47,6 +57,12 @@ namespace CloudLauncher
                 
                 // Cleanup old versions (keep 3 latest)
                 VersionManager.CleanupOldVersions(3);
+
+                // Initialize plugin manager
+                PluginManager.Instance.Initialize();
+                
+                // Load plugins asynchronously
+                _ = Task.Run(async () => await PluginManager.Instance.LoadAllPluginsAsync());
             }
             catch (Exception ex)
             {
@@ -71,6 +87,16 @@ namespace CloudLauncher
                             if (wasOffline)
                             {
                                 session = MSession.CreateOfflineSession(lastUsername);
+                                
+                                // Update plugin manager with session and publish login event
+                                PluginManager.Instance.UpdateCurrentSession(session);
+                                PluginManager.Instance.GetEventManager().Publish(new UserLoginEvent
+                                {
+                                    Session = session,
+                                    Username = lastUsername,
+                                    IsOffline = true
+                                });
+                                
                                 var gameLaunch = new GameLaunch(session);
                                 Application.Run(gameLaunch);
                                 return;
@@ -88,6 +114,15 @@ namespace CloudLauncher
                                         session = loginHandler.AuthenticateSilently(account).GetAwaiter().GetResult();
                                         if (session != null && session.Username == lastUsername)
                                         {
+                                            // Update plugin manager with session and publish login event
+                                            PluginManager.Instance.UpdateCurrentSession(session);
+                                            PluginManager.Instance.GetEventManager().Publish(new UserLoginEvent
+                                            {
+                                                Session = session,
+                                                Username = lastUsername,
+                                                IsOffline = false
+                                            });
+                                            
                                             var gameLaunch = new GameLaunch(session);
                                             Application.Run(gameLaunch);
                                             return;
@@ -133,6 +168,15 @@ namespace CloudLauncher
                                 session = new MSession(username, uuid, "access_token"); // Create session with saved data
                             }
                             
+                            // Update plugin manager with session and publish login event
+                            PluginManager.Instance.UpdateCurrentSession(session);
+                            PluginManager.Instance.GetEventManager().Publish(new UserLoginEvent
+                            {
+                                Session = session,
+                                Username = username,
+                                IsOffline = wasOffline
+                            });
+                            
                             var gameLaunch = new GameLaunch(session);
                             Application.Run(gameLaunch);
                             
@@ -165,6 +209,16 @@ namespace CloudLauncher
         public static void stop()
         {
             Logger.Info("Application stopping...");
+            
+            // Publish application exit event
+            PluginManager.Instance.GetEventManager().Publish(new ApplicationExitEvent
+            {
+                Reason = "User requested exit"
+            });
+            
+            // Unload all plugins
+            PluginManager.Instance.UnloadAllPlugins();
+            
             Application.Exit();
         }
 
@@ -173,5 +227,69 @@ namespace CloudLauncher
             Logger.Info("Application restarting...");
             Application.Restart();
         }
+
+        private static bool CheckMultipleInstances()
+        {
+            try
+            {
+                // Check if multiple instances are allowed
+                bool allowMultiple = RegistryConfig.GetUserPreference("AllowMultipleInstances", false);
+                
+                if (allowMultiple)
+                {
+                    Logger.Info("Multiple instances allowed");
+                    return true;
+                }
+
+                // Check if another instance is already running
+                string processName = Process.GetCurrentProcess().ProcessName;
+                Process[] processes = Process.GetProcessesByName(processName);
+
+                if (processes.Length > 1)
+                {
+                    Logger.Warning("Another instance is already running");
+                    
+                    // Try to bring the existing instance to the front
+                    foreach (var process in processes)
+                    {
+                        if (process.Id != Process.GetCurrentProcess().Id)
+                        {
+                            try
+                            {
+                                // Find the main window and bring it to front
+                                if (process.MainWindowHandle != IntPtr.Zero)
+                                {
+                                    ShowWindow(process.MainWindowHandle, SW_RESTORE);
+                                    SetForegroundWindow(process.MainWindowHandle);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.Warning($"Failed to bring existing instance to front: {ex.Message}");
+                            }
+                            break;
+                        }
+                    }
+                    return false;
+                }
+
+                Logger.Info("No other instances found");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error checking multiple instances: {ex.Message}");
+                return true; // Allow startup if check fails
+            }
+        }
+
+        // Windows API functions for bringing window to front
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        private const int SW_RESTORE = 9;
     }
 }

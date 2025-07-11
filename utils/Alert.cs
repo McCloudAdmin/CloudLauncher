@@ -17,10 +17,30 @@ namespace CloudLauncher.utils
         }
 
         /// <summary>
+        /// Shows a success alert with custom title
+        /// </summary>
+        /// <param name="message">The message to display</param>
+        /// <param name="title">The title (currently not used by AlertComponent)</param>
+        public static void Success(string message, string title)
+        {
+            ShowAlert(message, AlertComponent.AlertType.Success);
+        }
+
+        /// <summary>
         /// Shows a warning alert
         /// </summary>
         /// <param name="message">The message to display</param>
         public static void Warning(string message)
+        {
+            ShowAlert(message, AlertComponent.AlertType.Warning);
+        }
+
+        /// <summary>
+        /// Shows a warning alert with custom title
+        /// </summary>
+        /// <param name="message">The message to display</param>
+        /// <param name="title">The title (currently not used by AlertComponent)</param>
+        public static void Warning(string message, string title)
         {
             ShowAlert(message, AlertComponent.AlertType.Warning);
         }
@@ -35,10 +55,30 @@ namespace CloudLauncher.utils
         }
 
         /// <summary>
+        /// Shows an error alert with custom title
+        /// </summary>
+        /// <param name="message">The message to display</param>
+        /// <param name="title">The title (currently not used by AlertComponent)</param>
+        public static void Error(string message, string title)
+        {
+            ShowAlert(message, AlertComponent.AlertType.Error);
+        }
+
+        /// <summary>
         /// Shows an info alert
         /// </summary>
         /// <param name="message">The message to display</param>
         public static void Info(string message)
+        {
+            ShowAlert(message, AlertComponent.AlertType.Info);
+        }
+
+        /// <summary>
+        /// Shows an info alert with custom title
+        /// </summary>
+        /// <param name="message">The message to display</param>
+        /// <param name="title">The title (currently not used by AlertComponent)</param>
+        public static void Info(string message, string title)
         {
             ShowAlert(message, AlertComponent.AlertType.Info);
         }

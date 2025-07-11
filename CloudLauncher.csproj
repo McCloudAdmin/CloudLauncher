@@ -61,6 +61,8 @@
     <None Remove="assets\logo.png" />
     <None Remove="docs\registry_config.md" />
     <None Remove="docs\styles.md" />
+    <None Remove="docs\plugin_api_reference.md" />
+    <None Remove="docs\plugin_development.md" />
   </ItemGroup>
 
 
@@ -102,6 +104,8 @@
     <!-- Embed docs as resources instead of copying to output -->
     <EmbeddedResource Include="docs\registry_config.md" />
     <EmbeddedResource Include="docs\styles.md" />
+    <EmbeddedResource Include="docs\plugin_api_reference.md" />
+    <EmbeddedResource Include="docs\plugin_development.md" />
   </ItemGroup>
 
   <ItemGroup>

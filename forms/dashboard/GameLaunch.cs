@@ -1,12 +1,12 @@
-﻿using CloudLauncher.forms.auth;
-using CloudLauncher.utils;
+﻿using CloudLauncher.utils;
+using CloudLauncher.plugins;
+using CloudLauncher.plugins.Events;
 using CmlLib.Core;
 using CmlLib.Core.Auth;
 using CmlLib.Core.ProcessBuilder;
 using CmlLib.Core.Version;
 using CmlLib.Core.VersionMetadata;
 using System.Data;
-using System.Text;
 
 namespace CloudLauncher.forms.dashboard
 {
@@ -23,6 +23,7 @@ namespace CloudLauncher.forms.dashboard
         private bool _showSnapshot = false;
         private bool _showAlpha = false;
         private bool _showBeta = false;
+        private NotifyIcon _trayIcon;
 
         private class CustomVersionMetadata : IVersionMetadata
         {
@@ -66,6 +67,7 @@ namespace CloudLauncher.forms.dashboard
             dDVersions.DrawMode = DrawMode.OwnerDrawVariable;
             dDVersions.DropDownStyle = ComboBoxStyle.DropDownList;
 
+
             // add event handlers
             _launcher.FileProgressChanged += (sender, args) =>
             {
@@ -98,6 +100,7 @@ namespace CloudLauncher.forms.dashboard
             // Load versions and settings
             LoadVersions();
             LoadSettings();
+            InitializeNewSettings();
 
             lblUsername.Text = _currentSession?.Username ?? "Guest";
             lblType.Text = (_currentSession?.UserType == "msa" ? "(Premium)" : "(Cracked)") + $" - v{Program.appVersion}";
@@ -373,6 +376,9 @@ namespace CloudLauncher.forms.dashboard
                         Logger.Info($"Loaded username from registry: {username}");
                     }
                 }
+
+                // Load new settings
+                LoadNewSettings();
             }
             catch (Exception ex)
             {
@@ -552,6 +558,33 @@ namespace CloudLauncher.forms.dashboard
                     }
                 };
 
+                // Publish pre-launch event (cancellable)
+                var gameLaunchEvent = new GameLaunchEvent
+                {
+                    Version = version.Name,
+                    Username = launchOption.Session.Username,
+                    RamMb = launchOption.MaximumRamMb,
+                    LaunchOptions = new Dictionary<string, object>
+                    {
+                        ["ScreenWidth"] = launchOption.ScreenWidth,
+                        ["ScreenHeight"] = launchOption.ScreenHeight,
+                        ["FullScreen"] = launchOption.FullScreen,
+                        ["ServerIp"] = launchOption.ServerIp,
+                        ["ServerPort"] = launchOption.ServerPort,
+                        ["JavaPath"] = launchOption.JavaPath
+                    },
+                    JvmArguments = new List<string> { txtCustomArgs.Text }
+                };
+
+                PluginManager.Instance.GetEventManager().Publish(gameLaunchEvent);
+
+                // Check if launch was cancelled by plugins
+                if (gameLaunchEvent.IsCancelled)
+                {
+                    Alert.Warning($"Game launch was cancelled: {gameLaunchEvent.CancellationReason}");
+                    return;
+                }
+
                 // Install and launch
                 await _launcher.InstallAsync(version.Name);
                 var process = await _launcher.CreateProcessAsync(version.Name, launchOption);
@@ -559,11 +592,31 @@ namespace CloudLauncher.forms.dashboard
                 this.WindowState = FormWindowState.Minimized; // Minimize the launcher window
 
                 Logger.Info($"Launched Minecraft {version.Name} with {launchOption.MaximumRamMb}MB RAM");
+
+                // Publish post-launch event
+                PluginManager.Instance.GetEventManager().Publish(new GameLaunchedEvent
+                {
+                    Version = version.Name,
+                    Username = launchOption.Session.Username,
+                    ProcessId = process.Id,
+                    LaunchSuccess = true,
+                    ErrorMessage = null
+                });
             }
             catch (Exception ex)
             {
                 Logger.Error($"Failed to launch game: {ex.Message}");
                 Alert.Error("Failed to launch Minecraft. Please check the logs for details.");
+
+                // Publish failed launch event
+                PluginManager.Instance.GetEventManager().Publish(new GameLaunchedEvent
+                {
+                    Version = (dDVersions.SelectedItem as IVersionMetadata)?.Name ?? "Unknown",
+                    Username = _currentSession?.Username ?? "Unknown",
+                    ProcessId = -1,
+                    LaunchSuccess = false,
+                    ErrorMessage = ex.Message
+                });
             }
             finally
             {
@@ -577,6 +630,10 @@ namespace CloudLauncher.forms.dashboard
 
         private void btnLogout_Click(object sender, EventArgs e)
         {
+            // Get current session info before clearing
+            string username = _currentSession?.Username ?? "Unknown";
+            bool wasOffline = RegistryConfig.GetUserPreference("WasOffline", false);
+
             // Clear session and settings
             _currentSession = null;
             RegistryConfig.SaveUserPreference("LastUsername", "");
@@ -584,6 +641,13 @@ namespace CloudLauncher.forms.dashboard
             RegistryConfig.SaveUserPreference("KeepLoggedIn", false);
             RegistryConfig.SaveUserPreference("WasOffline", false);
             RegistryConfig.SaveUserPreference("RestartForLogout", true); // Signal to restart and show login
+
+            // Publish logout event
+            PluginManager.Instance.GetEventManager().Publish(new UserLogoutEvent
+            {
+                Username = username,
+                WasOffline = wasOffline
+            });
 
             // Close this form, which will return control to Program.cs
             this.Close();
@@ -621,11 +685,6 @@ namespace CloudLauncher.forms.dashboard
         private void btnHome_Click(object sender, EventArgs e)
         {
             Pages.SetPage(PageHome);
-        }
-
-        private void btnSettings_Click(object sender, EventArgs e)
-        {
-            Pages.SetPage(PageSettings);
         }
 
         private async Task LoadUserAvatarAsync(string username)
@@ -685,6 +744,250 @@ namespace CloudLauncher.forms.dashboard
         private void btnChangeLog_Click(object sender, EventArgs e)
         {
             Pages.SetPage(PageChangeLog);
+        }
+
+        private void InitializeNewSettings()
+        {
+            try
+            {
+                // Initialize startup position dropdown
+                ddStartupPosition.Items.Clear();
+                ddStartupPosition.Items.Add("Center Screen");
+                ddStartupPosition.Items.Add("Last Position");
+                ddStartupPosition.Items.Add("Top Left");
+                ddStartupPosition.Items.Add("Top Right");
+                ddStartupPosition.Items.Add("Bottom Left");
+                ddStartupPosition.Items.Add("Bottom Right");
+                ddStartupPosition.SelectedIndex = 0;
+
+                // Initialize log level dropdown
+                ddLogLevel.Items.Clear();
+                ddLogLevel.Items.Add("Error");
+                ddLogLevel.Items.Add("Warning");
+                ddLogLevel.Items.Add("Info");
+                ddLogLevel.Items.Add("Debug");
+                ddLogLevel.SelectedIndex = 2; // Default to Info
+
+                // Initialize system tray icon
+                InitializeTrayIcon();
+
+                Logger.Info("New settings initialized successfully");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to initialize new settings: {ex.Message}");
+            }
+        }
+
+        private void LoadNewSettings()
+        {
+            try
+            {
+                // Load application settings
+                cbAllowMultipleInstances.Checked = RegistryConfig.GetUserPreference("AllowMultipleInstances", false);
+                cbStartMinimized.Checked = RegistryConfig.GetUserPreference("StartMinimized", false);
+                cbCloseToTray.Checked = RegistryConfig.GetUserPreference("CloseToTray", false);
+                cbAutoUpdate.Checked = RegistryConfig.GetUserPreference("AutoUpdate", true);
+
+                // Load startup position
+                string startupPosition = RegistryConfig.GetUserPreference<string>("StartupPosition", "Center Screen");
+                int positionIndex = ddStartupPosition.Items.IndexOf(startupPosition);
+                if (positionIndex != -1)
+                {
+                    ddStartupPosition.SelectedIndex = positionIndex;
+                }
+
+                // Load log level
+                string logLevel = RegistryConfig.GetUserPreference<string>("LogLevel", "Info");
+                int logIndex = ddLogLevel.Items.IndexOf(logLevel);
+                if (logIndex != -1)
+                {
+                    ddLogLevel.SelectedIndex = logIndex;
+                }
+
+                Logger.Info("New settings loaded successfully");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to load new settings: {ex.Message}");
+            }
+        }
+
+        private void cbAllowMultipleInstances_CheckedChanged(object sender, EventArgs e)
+        {
+            RegistryConfig.SaveUserPreference("AllowMultipleInstances", cbAllowMultipleInstances.Checked);
+            Logger.Info($"Allow multiple instances: {cbAllowMultipleInstances.Checked}");
+        }
+
+        private void cbStartMinimized_CheckedChanged(object sender, EventArgs e)
+        {
+            RegistryConfig.SaveUserPreference("StartMinimized", cbStartMinimized.Checked);
+            Logger.Info($"Start minimized: {cbStartMinimized.Checked}");
+        }
+
+        private void cbCloseToTray_CheckedChanged(object sender, EventArgs e)
+        {
+            RegistryConfig.SaveUserPreference("CloseToTray", cbCloseToTray.Checked);
+            Logger.Info($"Close to tray: {cbCloseToTray.Checked}");
+        }
+
+        private void cbAutoUpdate_CheckedChanged(object sender, EventArgs e)
+        {
+            RegistryConfig.SaveUserPreference("AutoUpdate", cbAutoUpdate.Checked);
+            Logger.Info($"Auto update: {cbAutoUpdate.Checked}");
+        }
+
+        private void ddStartupPosition_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (ddStartupPosition.SelectedItem != null)
+            {
+                string position = ddStartupPosition.SelectedItem.ToString();
+                RegistryConfig.SaveUserPreference("StartupPosition", position);
+                Logger.Info($"Startup position: {position}");
+                ApplyStartupPosition(position);
+            }
+        }
+
+        private void ddLogLevel_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (ddLogLevel.SelectedItem != null)
+            {
+                string logLevel = ddLogLevel.SelectedItem.ToString();
+                RegistryConfig.SaveUserPreference("LogLevel", logLevel);
+                Logger.Info($"Log level: {logLevel}");
+            }
+        }
+
+        private void ApplyStartupPosition(string position)
+        {
+            try
+            {
+                switch (position)
+                {
+                    case "Center Screen":
+                        this.StartPosition = FormStartPosition.CenterScreen;
+                        break;
+                    case "Last Position":
+                        this.StartPosition = FormStartPosition.Manual;
+                        // Load saved position
+                        int savedX = RegistryConfig.GetUserPreference("WindowX", 100);
+                        int savedY = RegistryConfig.GetUserPreference("WindowY", 100);
+                        this.Location = new Point(savedX, savedY);
+                        break;
+                    case "Top Left":
+                        this.StartPosition = FormStartPosition.Manual;
+                        this.Location = new Point(50, 50);
+                        break;
+                    case "Top Right":
+                        this.StartPosition = FormStartPosition.Manual;
+                        this.Location = new Point(Screen.PrimaryScreen.WorkingArea.Width - this.Width - 50, 50);
+                        break;
+                    case "Bottom Left":
+                        this.StartPosition = FormStartPosition.Manual;
+                        this.Location = new Point(50, Screen.PrimaryScreen.WorkingArea.Height - this.Height - 50);
+                        break;
+                    case "Bottom Right":
+                        this.StartPosition = FormStartPosition.Manual;
+                        this.Location = new Point(
+                            Screen.PrimaryScreen.WorkingArea.Width - this.Width - 50,
+                            Screen.PrimaryScreen.WorkingArea.Height - this.Height - 50);
+                        break;
+                }
+                Logger.Info($"Applied startup position: {position}");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to apply startup position: {ex.Message}");
+            }
+        }
+
+        protected override void SetVisibleCore(bool value)
+        {
+            // Handle start minimized setting
+            if (cbStartMinimized?.Checked == true && !IsHandleCreated)
+            {
+                this.WindowState = FormWindowState.Minimized;
+                this.ShowInTaskbar = false;
+            }
+            base.SetVisibleCore(value);
+        }
+
+        protected override void OnLocationChanged(EventArgs e)
+        {
+            base.OnLocationChanged(e);
+            // Save window position for "Last Position" setting
+            if (this.WindowState == FormWindowState.Normal && ddStartupPosition?.SelectedItem?.ToString() == "Last Position")
+            {
+                RegistryConfig.SaveUserPreference("WindowX", this.Location.X);
+                RegistryConfig.SaveUserPreference("WindowY", this.Location.Y);
+            }
+        }
+
+        private void InitializeTrayIcon()
+        {
+            try
+            {
+                _trayIcon = new NotifyIcon();
+                _trayIcon.Icon = this.Icon ?? SystemIcons.Application;
+                _trayIcon.Text = "CloudLauncher";
+                _trayIcon.Visible = false;
+
+                // Create context menu for tray icon
+                var contextMenu = new ContextMenuStrip();
+
+                var showItem = new ToolStripMenuItem("Show CloudLauncher");
+                showItem.Click += (s, e) => ShowFromTray();
+                contextMenu.Items.Add(showItem);
+
+                contextMenu.Items.Add(new ToolStripSeparator());
+
+                var exitItem = new ToolStripMenuItem("Exit");
+                exitItem.Click += (s, e) => ExitApplication();
+                contextMenu.Items.Add(exitItem);
+
+                _trayIcon.ContextMenuStrip = contextMenu;
+                _trayIcon.DoubleClick += (s, e) => ShowFromTray();
+
+                Logger.Info("System tray icon initialized");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to initialize tray icon: {ex.Message}");
+            }
+        }
+
+        private void ShowFromTray()
+        {
+            this.Show();
+            this.WindowState = FormWindowState.Normal;
+            this.ShowInTaskbar = true;
+            _trayIcon.Visible = false;
+            this.BringToFront();
+        }
+
+        private void ExitApplication()
+        {
+            _trayIcon?.Dispose();
+            Application.Exit();
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            // Handle close to tray
+            if (cbCloseToTray?.Checked == true && e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true;
+                this.WindowState = FormWindowState.Minimized;
+                this.ShowInTaskbar = false;
+                _trayIcon.Visible = true;
+                _trayIcon.ShowBalloonTip(2000, "CloudLauncher", "Application minimized to tray", ToolTipIcon.Info);
+                Logger.Info("Application minimized to system tray");
+            }
+            else
+            {
+                _trayIcon?.Dispose();
+                base.OnFormClosing(e);
+            }
         }
     }
 }

@@ -45,6 +45,10 @@
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges19 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges13 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges21 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges24 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges23 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges26 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges25 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Utilities.BunifuPages.BunifuAnimatorNS.Animation animation1 = new Utilities.BunifuPages.BunifuAnimatorNS.Animation();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GameLaunch));
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges12 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
@@ -53,16 +57,14 @@
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges16 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges20 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges22 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges23 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges24 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges25 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges26 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges27 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges28 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges29 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges30 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges31 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges32 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges33 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges34 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             tBRam = new CloudLauncher.components.TrackBar(components);
             dDVersions = new CloudLauncher.components.DropDown(components);
             btnStartGame = new CloudLauncher.components.Button(components);
@@ -84,6 +86,14 @@
             txtCustomArgs = new CloudLauncher.components.TextBox(components);
             txtRam = new CloudLauncher.components.TextBox(components);
             lblReady = new CloudLauncher.components.Label(components);
+            boxApp = new CloudLauncher.components.GroupBox(components);
+            cbAllowMultipleInstances = new CloudLauncher.components.CheckBox(components);
+            cbStartMinimized = new CloudLauncher.components.CheckBox(components);
+            ddStartupPosition = new CloudLauncher.components.DropDown(components);
+            boxBehavior = new CloudLauncher.components.GroupBox(components);
+            cbCloseToTray = new CloudLauncher.components.CheckBox(components);
+            cbAutoUpdate = new CloudLauncher.components.CheckBox(components);
+            ddLogLevel = new CloudLauncher.components.DropDown(components);
             Pages = new Bunifu.UI.WinForms.BunifuPages();
             PageHome = new TabPage();
             PageSettings = new TabPage();
@@ -103,12 +113,15 @@
             lblType = new CloudLauncher.components.Label(components);
             pbUserProfile = new PictureBox();
             lblUsername = new CloudLauncher.components.Label(components);
-            btnSettings = new CloudLauncher.components.Button(components);
             lblAppName = new CloudLauncher.components.Label(components);
             pbAppIcon = new PictureBox();
             btnHome = new CloudLauncher.components.Button(components);
             launchPanel = new Panel();
             guna2Elipse1 = new Guna.UI2.WinForms.Guna2Elipse(components);
+            lblLogLevel = new CloudLauncher.components.Label(components);
+            lblWinPos = new CloudLauncher.components.Label(components);
+            boxApp.SuspendLayout();
+            boxBehavior.SuspendLayout();
             Pages.SuspendLayout();
             PageSettings.SuspendLayout();
             boxJoin.SuspendLayout();
@@ -205,7 +218,7 @@
             btnLogout.ForeColor = Color.White;
             btnLogout.HoverState.FillColor = Color.FromArgb(231, 80, 34);
             btnLogout.IndicateFocus = true;
-            btnLogout.Location = new Point(157, 78);
+            btnLogout.Location = new Point(92, 78);
             btnLogout.Name = "btnLogout";
             btnLogout.PressedColor = Color.FromArgb(231, 80, 34);
             btnLogout.ShadowDecoration.CustomizableEdges = customizableEdges5;
@@ -586,6 +599,193 @@
             lblReady.TabIndex = 0;
             lblReady.Text = "Ready";
             // 
+            // boxApp
+            // 
+            boxApp.BackColor = Color.Transparent;
+            boxApp.BorderColor = Color.Transparent;
+            boxApp.BorderRadius = 6;
+            boxApp.Controls.Add(lblWinPos);
+            boxApp.Controls.Add(cbAllowMultipleInstances);
+            boxApp.Controls.Add(cbStartMinimized);
+            boxApp.Controls.Add(ddStartupPosition);
+            boxApp.CustomBorderColor = Color.FromArgb(231, 80, 34);
+            boxApp.CustomizableEdges = customizableEdges24;
+            boxApp.FillColor = Color.FromArgb(10, 10, 10);
+            boxApp.Font = new Font("Trebuchet MS", 11F, FontStyle.Bold);
+            boxApp.ForeColor = Color.White;
+            boxApp.Location = new Point(6, 333);
+            boxApp.Name = "boxApp";
+            boxApp.ShadowDecoration.CustomizableEdges = customizableEdges24;
+            boxApp.Size = new Size(454, 120);
+            boxApp.TabIndex = 4;
+            boxApp.Text = "Application Settings";
+            boxApp.UseTransparentBackground = true;
+            // 
+            // cbAllowMultipleInstances
+            // 
+            cbAllowMultipleInstances.Animated = true;
+            cbAllowMultipleInstances.AutoSize = true;
+            cbAllowMultipleInstances.BackColor = Color.Transparent;
+            cbAllowMultipleInstances.CheckedState.BorderColor = Color.FromArgb(231, 80, 34);
+            cbAllowMultipleInstances.CheckedState.BorderRadius = 0;
+            cbAllowMultipleInstances.CheckedState.BorderThickness = 0;
+            cbAllowMultipleInstances.CheckedState.FillColor = Color.FromArgb(231, 80, 34);
+            cbAllowMultipleInstances.Font = new Font("Trebuchet MS", 9F, FontStyle.Bold);
+            cbAllowMultipleInstances.ForeColor = Color.White;
+            cbAllowMultipleInstances.Location = new Point(18, 52);
+            cbAllowMultipleInstances.Name = "cbAllowMultipleInstances";
+            cbAllowMultipleInstances.Size = new Size(167, 22);
+            cbAllowMultipleInstances.TabIndex = 0;
+            cbAllowMultipleInstances.Text = "Allow Multiple Instances";
+            cbAllowMultipleInstances.UncheckedState.BorderColor = Color.FromArgb(38, 38, 38);
+            cbAllowMultipleInstances.UncheckedState.BorderRadius = 0;
+            cbAllowMultipleInstances.UncheckedState.BorderThickness = 0;
+            cbAllowMultipleInstances.UncheckedState.FillColor = Color.FromArgb(38, 38, 38);
+            cbAllowMultipleInstances.UseVisualStyleBackColor = false;
+            cbAllowMultipleInstances.CheckedChanged += cbAllowMultipleInstances_CheckedChanged;
+            // 
+            // cbStartMinimized
+            // 
+            cbStartMinimized.Animated = true;
+            cbStartMinimized.AutoSize = true;
+            cbStartMinimized.BackColor = Color.Transparent;
+            cbStartMinimized.CheckedState.BorderColor = Color.FromArgb(231, 80, 34);
+            cbStartMinimized.CheckedState.BorderRadius = 0;
+            cbStartMinimized.CheckedState.BorderThickness = 0;
+            cbStartMinimized.CheckedState.FillColor = Color.FromArgb(231, 80, 34);
+            cbStartMinimized.Font = new Font("Trebuchet MS", 9F, FontStyle.Bold);
+            cbStartMinimized.ForeColor = Color.White;
+            cbStartMinimized.Location = new Point(18, 80);
+            cbStartMinimized.Name = "cbStartMinimized";
+            cbStartMinimized.Size = new Size(117, 22);
+            cbStartMinimized.TabIndex = 1;
+            cbStartMinimized.Text = "Start Minimized";
+            cbStartMinimized.UncheckedState.BorderColor = Color.FromArgb(38, 38, 38);
+            cbStartMinimized.UncheckedState.BorderRadius = 0;
+            cbStartMinimized.UncheckedState.BorderThickness = 0;
+            cbStartMinimized.UncheckedState.FillColor = Color.FromArgb(38, 38, 38);
+            cbStartMinimized.UseVisualStyleBackColor = false;
+            cbStartMinimized.CheckedChanged += cbStartMinimized_CheckedChanged;
+            // 
+            // ddStartupPosition
+            // 
+            ddStartupPosition.BackColor = Color.Transparent;
+            ddStartupPosition.BorderColor = Color.Transparent;
+            ddStartupPosition.BorderRadius = 6;
+            ddStartupPosition.BorderThickness = 0;
+            ddStartupPosition.CustomizableEdges = customizableEdges23;
+            ddStartupPosition.DrawMode = DrawMode.OwnerDrawFixed;
+            ddStartupPosition.DropDownStyle = ComboBoxStyle.DropDownList;
+            ddStartupPosition.FillColor = Color.FromArgb(15, 15, 15);
+            ddStartupPosition.FocusedColor = Color.FromArgb(231, 80, 34);
+            ddStartupPosition.FocusedState.BorderColor = Color.FromArgb(231, 80, 34);
+            ddStartupPosition.Font = new Font("Trebuchet MS", 9F);
+            ddStartupPosition.ForeColor = Color.White;
+            ddStartupPosition.ItemHeight = 30;
+            ddStartupPosition.Location = new Point(246, 75);
+            ddStartupPosition.Margin = new Padding(4, 3, 4, 3);
+            ddStartupPosition.Name = "ddStartupPosition";
+            ddStartupPosition.RightToLeft = RightToLeft.No;
+            ddStartupPosition.ShadowDecoration.CustomizableEdges = customizableEdges23;
+            ddStartupPosition.Size = new Size(190, 36);
+            ddStartupPosition.TabIndex = 2;
+            ddStartupPosition.TabStop = false;
+            ddStartupPosition.SelectedIndexChanged += ddStartupPosition_SelectedIndexChanged;
+            // 
+            // boxBehavior
+            // 
+            boxBehavior.BackColor = Color.Transparent;
+            boxBehavior.BorderColor = Color.Transparent;
+            boxBehavior.BorderRadius = 6;
+            boxBehavior.Controls.Add(lblLogLevel);
+            boxBehavior.Controls.Add(cbCloseToTray);
+            boxBehavior.Controls.Add(cbAutoUpdate);
+            boxBehavior.Controls.Add(ddLogLevel);
+            boxBehavior.CustomBorderColor = Color.FromArgb(231, 80, 34);
+            boxBehavior.CustomizableEdges = customizableEdges26;
+            boxBehavior.FillColor = Color.FromArgb(10, 10, 10);
+            boxBehavior.Font = new Font("Trebuchet MS", 11F, FontStyle.Bold);
+            boxBehavior.ForeColor = Color.White;
+            boxBehavior.Location = new Point(475, 333);
+            boxBehavior.Name = "boxBehavior";
+            boxBehavior.ShadowDecoration.CustomizableEdges = customizableEdges26;
+            boxBehavior.Size = new Size(366, 120);
+            boxBehavior.TabIndex = 4;
+            boxBehavior.Text = "Application Behavior";
+            boxBehavior.UseTransparentBackground = true;
+            // 
+            // cbCloseToTray
+            // 
+            cbCloseToTray.Animated = true;
+            cbCloseToTray.AutoSize = true;
+            cbCloseToTray.BackColor = Color.Transparent;
+            cbCloseToTray.CheckedState.BorderColor = Color.FromArgb(231, 80, 34);
+            cbCloseToTray.CheckedState.BorderRadius = 0;
+            cbCloseToTray.CheckedState.BorderThickness = 0;
+            cbCloseToTray.CheckedState.FillColor = Color.FromArgb(231, 80, 34);
+            cbCloseToTray.Font = new Font("Trebuchet MS", 9F, FontStyle.Bold);
+            cbCloseToTray.ForeColor = Color.White;
+            cbCloseToTray.Location = new Point(20, 57);
+            cbCloseToTray.Name = "cbCloseToTray";
+            cbCloseToTray.Size = new Size(101, 22);
+            cbCloseToTray.TabIndex = 0;
+            cbCloseToTray.Text = "Close to Tray";
+            cbCloseToTray.UncheckedState.BorderColor = Color.FromArgb(38, 38, 38);
+            cbCloseToTray.UncheckedState.BorderRadius = 0;
+            cbCloseToTray.UncheckedState.BorderThickness = 0;
+            cbCloseToTray.UncheckedState.FillColor = Color.FromArgb(38, 38, 38);
+            cbCloseToTray.UseVisualStyleBackColor = false;
+            cbCloseToTray.CheckedChanged += cbCloseToTray_CheckedChanged;
+            // 
+            // cbAutoUpdate
+            // 
+            cbAutoUpdate.Animated = true;
+            cbAutoUpdate.AutoSize = true;
+            cbAutoUpdate.BackColor = Color.Transparent;
+            cbAutoUpdate.CheckedState.BorderColor = Color.FromArgb(231, 80, 34);
+            cbAutoUpdate.CheckedState.BorderRadius = 0;
+            cbAutoUpdate.CheckedState.BorderThickness = 0;
+            cbAutoUpdate.CheckedState.FillColor = Color.FromArgb(231, 80, 34);
+            cbAutoUpdate.Font = new Font("Trebuchet MS", 9F, FontStyle.Bold);
+            cbAutoUpdate.ForeColor = Color.White;
+            cbAutoUpdate.Location = new Point(20, 85);
+            cbAutoUpdate.Name = "cbAutoUpdate";
+            cbAutoUpdate.Size = new Size(103, 22);
+            cbAutoUpdate.TabIndex = 1;
+            cbAutoUpdate.Text = "Auto Updates";
+            cbAutoUpdate.UncheckedState.BorderColor = Color.FromArgb(38, 38, 38);
+            cbAutoUpdate.UncheckedState.BorderRadius = 0;
+            cbAutoUpdate.UncheckedState.BorderThickness = 0;
+            cbAutoUpdate.UncheckedState.FillColor = Color.FromArgb(38, 38, 38);
+            cbAutoUpdate.UseVisualStyleBackColor = false;
+            cbAutoUpdate.CheckedChanged += cbAutoUpdate_CheckedChanged;
+            // 
+            // ddLogLevel
+            // 
+            ddLogLevel.BackColor = Color.Transparent;
+            ddLogLevel.BorderColor = Color.Transparent;
+            ddLogLevel.BorderRadius = 6;
+            ddLogLevel.BorderThickness = 0;
+            ddLogLevel.CustomizableEdges = customizableEdges25;
+            ddLogLevel.DrawMode = DrawMode.OwnerDrawFixed;
+            ddLogLevel.DropDownStyle = ComboBoxStyle.DropDownList;
+            ddLogLevel.FillColor = Color.FromArgb(15, 15, 15);
+            ddLogLevel.FocusedColor = Color.FromArgb(231, 80, 34);
+            ddLogLevel.FocusedState.BorderColor = Color.FromArgb(231, 80, 34);
+            ddLogLevel.Font = new Font("Trebuchet MS", 9F);
+            ddLogLevel.ForeColor = Color.White;
+            ddLogLevel.ItemHeight = 30;
+            ddLogLevel.Location = new Point(182, 75);
+            ddLogLevel.Margin = new Padding(4, 3, 4, 3);
+            ddLogLevel.MaxDropDownItems = 6;
+            ddLogLevel.Name = "ddLogLevel";
+            ddLogLevel.RightToLeft = RightToLeft.No;
+            ddLogLevel.ShadowDecoration.CustomizableEdges = customizableEdges25;
+            ddLogLevel.Size = new Size(149, 36);
+            ddLogLevel.TabIndex = 2;
+            ddLogLevel.TabStop = false;
+            ddLogLevel.SelectedIndexChanged += ddLogLevel_SelectedIndexChanged;
+            // 
             // Pages
             // 
             Pages.Alignment = TabAlignment.Bottom;
@@ -634,6 +834,7 @@
             // 
             // PageSettings
             // 
+            PageSettings.AutoScroll = true;
             PageSettings.BackColor = Color.FromArgb(15, 15, 15);
             PageSettings.Controls.Add(boxJoin);
             PageSettings.Controls.Add(boxArgs);
@@ -641,6 +842,8 @@
             PageSettings.Controls.Add(boxRez);
             PageSettings.Controls.Add(boxJava);
             PageSettings.Controls.Add(boxRam);
+            PageSettings.Controls.Add(boxApp);
+            PageSettings.Controls.Add(boxBehavior);
             PageSettings.Location = new Point(4, 4);
             PageSettings.Name = "PageSettings";
             PageSettings.Padding = new Padding(3);
@@ -815,7 +1018,7 @@
             button1.Animated = true;
             button1.BackColor = Color.Transparent;
             button1.BorderRadius = 6;
-            button1.CustomizableEdges = customizableEdges23;
+            button1.CustomizableEdges = customizableEdges27;
             button1.DisabledState.BorderColor = Color.DarkGray;
             button1.DisabledState.CustomBorderColor = Color.DarkGray;
             button1.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
@@ -828,7 +1031,7 @@
             button1.Location = new Point(27, 371);
             button1.Name = "button1";
             button1.PressedColor = Color.FromArgb(231, 80, 34);
-            button1.ShadowDecoration.CustomizableEdges = customizableEdges24;
+            button1.ShadowDecoration.CustomizableEdges = customizableEdges28;
             button1.Size = new Size(256, 45);
             button1.TabIndex = 10;
             button1.TabStop = false;
@@ -839,7 +1042,7 @@
             btnChangeLog.Animated = true;
             btnChangeLog.BackColor = Color.Transparent;
             btnChangeLog.BorderRadius = 6;
-            btnChangeLog.CustomizableEdges = customizableEdges25;
+            btnChangeLog.CustomizableEdges = customizableEdges29;
             btnChangeLog.DisabledState.BorderColor = Color.DarkGray;
             btnChangeLog.DisabledState.CustomBorderColor = Color.DarkGray;
             btnChangeLog.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
@@ -852,7 +1055,7 @@
             btnChangeLog.Location = new Point(27, 320);
             btnChangeLog.Name = "btnChangeLog";
             btnChangeLog.PressedColor = Color.FromArgb(231, 80, 34);
-            btnChangeLog.ShadowDecoration.CustomizableEdges = customizableEdges26;
+            btnChangeLog.ShadowDecoration.CustomizableEdges = customizableEdges30;
             btnChangeLog.Size = new Size(256, 45);
             btnChangeLog.TabIndex = 9;
             btnChangeLog.TabStop = false;
@@ -864,7 +1067,7 @@
             btnSettings2.Animated = true;
             btnSettings2.BackColor = Color.Transparent;
             btnSettings2.BorderRadius = 6;
-            btnSettings2.CustomizableEdges = customizableEdges27;
+            btnSettings2.CustomizableEdges = customizableEdges31;
             btnSettings2.DisabledState.BorderColor = Color.DarkGray;
             btnSettings2.DisabledState.CustomBorderColor = Color.DarkGray;
             btnSettings2.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
@@ -877,7 +1080,7 @@
             btnSettings2.Location = new Point(27, 269);
             btnSettings2.Name = "btnSettings2";
             btnSettings2.PressedColor = Color.FromArgb(231, 80, 34);
-            btnSettings2.ShadowDecoration.CustomizableEdges = customizableEdges28;
+            btnSettings2.ShadowDecoration.CustomizableEdges = customizableEdges32;
             btnSettings2.Size = new Size(256, 45);
             btnSettings2.TabIndex = 8;
             btnSettings2.TabStop = false;
@@ -890,7 +1093,6 @@
             profilePanel.Controls.Add(lblType);
             profilePanel.Controls.Add(pbUserProfile);
             profilePanel.Controls.Add(lblUsername);
-            profilePanel.Controls.Add(btnSettings);
             profilePanel.Controls.Add(btnLogout);
             profilePanel.Dock = DockStyle.Bottom;
             profilePanel.Location = new Point(0, 530);
@@ -941,31 +1143,6 @@
             lblUsername.Text = "NaysKutzu";
             lblUsername.TextAlignment = ContentAlignment.MiddleLeft;
             // 
-            // btnSettings
-            // 
-            btnSettings.Animated = true;
-            btnSettings.BackColor = Color.Transparent;
-            btnSettings.BorderRadius = 6;
-            btnSettings.CustomizableEdges = customizableEdges29;
-            btnSettings.DisabledState.BorderColor = Color.DarkGray;
-            btnSettings.DisabledState.CustomBorderColor = Color.DarkGray;
-            btnSettings.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
-            btnSettings.DisabledState.ForeColor = Color.FromArgb(141, 141, 141);
-            btnSettings.FillColor = Color.FromArgb(255, 87, 34);
-            btnSettings.Font = new Font("Trebuchet MS", 11F, FontStyle.Bold);
-            btnSettings.ForeColor = Color.White;
-            btnSettings.HoverState.FillColor = Color.FromArgb(231, 80, 34);
-            btnSettings.IndicateFocus = true;
-            btnSettings.Location = new Point(46, 78);
-            btnSettings.Name = "btnSettings";
-            btnSettings.PressedColor = Color.FromArgb(231, 80, 34);
-            btnSettings.ShadowDecoration.CustomizableEdges = customizableEdges30;
-            btnSettings.Size = new Size(105, 38);
-            btnSettings.TabIndex = 1;
-            btnSettings.TabStop = false;
-            btnSettings.Text = "Settings";
-            btnSettings.Click += btnSettings_Click;
-            // 
             // lblAppName
             // 
             lblAppName.AutoSize = false;
@@ -996,7 +1173,7 @@
             btnHome.Animated = true;
             btnHome.BackColor = Color.Transparent;
             btnHome.BorderRadius = 6;
-            btnHome.CustomizableEdges = customizableEdges31;
+            btnHome.CustomizableEdges = customizableEdges33;
             btnHome.DisabledState.BorderColor = Color.DarkGray;
             btnHome.DisabledState.CustomBorderColor = Color.DarkGray;
             btnHome.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
@@ -1009,7 +1186,7 @@
             btnHome.Location = new Point(27, 218);
             btnHome.Name = "btnHome";
             btnHome.PressedColor = Color.FromArgb(231, 80, 34);
-            btnHome.ShadowDecoration.CustomizableEdges = customizableEdges32;
+            btnHome.ShadowDecoration.CustomizableEdges = customizableEdges34;
             btnHome.Size = new Size(256, 45);
             btnHome.TabIndex = 0;
             btnHome.TabStop = false;
@@ -1034,6 +1211,36 @@
             guna2Elipse1.BorderRadius = 64;
             guna2Elipse1.TargetControl = pbUserProfile;
             // 
+            // lblLogLevel
+            // 
+            lblLogLevel.AutoSize = false;
+            lblLogLevel.BackColor = Color.Transparent;
+            lblLogLevel.Font = new Font("Trebuchet MS", 9F, FontStyle.Bold);
+            lblLogLevel.ForeColor = Color.White;
+            lblLogLevel.IsContextMenuEnabled = false;
+            lblLogLevel.IsSelectionEnabled = false;
+            lblLogLevel.Location = new Point(182, 47);
+            lblLogLevel.Name = "lblLogLevel";
+            lblLogLevel.Size = new Size(148, 22);
+            lblLogLevel.TabIndex = 11;
+            lblLogLevel.Text = "Log Level:";
+            lblLogLevel.TextAlignment = ContentAlignment.MiddleLeft;
+            // 
+            // lblWinPos
+            // 
+            lblWinPos.AutoSize = false;
+            lblWinPos.BackColor = Color.Transparent;
+            lblWinPos.Font = new Font("Trebuchet MS", 9F, FontStyle.Bold);
+            lblWinPos.ForeColor = Color.White;
+            lblWinPos.IsContextMenuEnabled = false;
+            lblWinPos.IsSelectionEnabled = false;
+            lblWinPos.Location = new Point(246, 47);
+            lblWinPos.Name = "lblWinPos";
+            lblWinPos.Size = new Size(185, 22);
+            lblWinPos.TabIndex = 12;
+            lblWinPos.Text = "Startup Position:";
+            lblWinPos.TextAlignment = ContentAlignment.MiddleLeft;
+            // 
             // GameLaunch
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -1053,6 +1260,10 @@
             StartPosition = FormStartPosition.CenterScreen;
             Text = "CloudLauncher";
             Load += GameLaunch_Load;
+            boxApp.ResumeLayout(false);
+            boxApp.PerformLayout();
+            boxBehavior.ResumeLayout(false);
+            boxBehavior.PerformLayout();
             Pages.ResumeLayout(false);
             PageSettings.ResumeLayout(false);
             boxJoin.ResumeLayout(false);
@@ -1101,7 +1312,6 @@
         private Panel panelSidebar;
         private components.Button btnHome;
         private Panel launchPanel;
-        private components.Button btnSettings;
         private components.Label lblAppName;
         private PictureBox pbAppIcon;
         private Panel profilePanel;
@@ -1118,7 +1328,17 @@
         private components.GroupBox boxArgs;
         private components.GroupBox boxVersion;
         private components.GroupBox boxJoin;
+        private components.GroupBox boxApp;
+        private components.GroupBox boxBehavior;
+        private components.CheckBox cbAllowMultipleInstances;
+        private components.CheckBox cbStartMinimized;
+        private components.CheckBox cbCloseToTray;
+        private components.CheckBox cbAutoUpdate;
+        private components.DropDown ddStartupPosition;
+        private components.DropDown ddLogLevel;
         private TabPage PageChangeLog;
         private Microsoft.Web.WebView2.WinForms.WebView2 chanegLogWebView;
+        private components.Label lblLogLevel;
+        private components.Label lblWinPos;
     }
 }
