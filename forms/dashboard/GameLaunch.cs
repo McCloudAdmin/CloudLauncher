@@ -9,6 +9,7 @@ using CmlLib.Core.VersionMetadata;
 using System.Data;
 using DiscordRPC;
 using DiscordRPC.Logging;
+using System.Text.Json;
 
 namespace CloudLauncher.forms.dashboard
 {
@@ -55,6 +56,59 @@ namespace CloudLauncher.forms.dashboard
             public Task SaveVersionAsync(MinecraftPath path, CancellationToken cancellationToken = default)
             {
                 throw new NotImplementedException("Custom versions cannot be downloaded");
+            }
+        }
+
+        private class CachedVersionMetadata : IVersionMetadata
+        {
+            public string Name { get; set; }
+            public string Type { get; set; }
+            public string Url { get; set; }
+            public DateTimeOffset ReleaseTime { get; set; }
+
+            public async Task<IVersion> GetVersionAsync(CancellationToken cancellationToken = default)
+            {
+                // For cached versions, delegate to the launcher to get the actual version
+                var launcher = new MinecraftLauncher(new MinecraftPath());
+                var allVersions = await launcher.GetAllVersionsAsync();
+                var actualVersion = allVersions.FirstOrDefault(v => v.Name == this.Name);
+                
+                if (actualVersion != null)
+                {
+                    return await actualVersion.GetVersionAsync(cancellationToken);
+                }
+                
+                throw new InvalidOperationException($"Version {Name} not found in actual version list");
+            }
+
+            public async Task<IVersion> GetAndSaveVersionAsync(MinecraftPath path, CancellationToken cancellationToken = default)
+            {
+                var launcher = new MinecraftLauncher(path);
+                var allVersions = await launcher.GetAllVersionsAsync();
+                var actualVersion = allVersions.FirstOrDefault(v => v.Name == this.Name);
+                
+                if (actualVersion != null)
+                {
+                    return await actualVersion.GetAndSaveVersionAsync(path, cancellationToken);
+                }
+                
+                throw new InvalidOperationException($"Version {Name} not found in actual version list");
+            }
+
+            public async Task SaveVersionAsync(MinecraftPath path, CancellationToken cancellationToken = default)
+            {
+                var launcher = new MinecraftLauncher(path);
+                var allVersions = await launcher.GetAllVersionsAsync();
+                var actualVersion = allVersions.FirstOrDefault(v => v.Name == this.Name);
+                
+                if (actualVersion != null)
+                {
+                    await actualVersion.SaveVersionAsync(path, cancellationToken);
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Version {Name} not found in actual version list");
+                }
             }
         }
 
@@ -133,6 +187,9 @@ namespace CloudLauncher.forms.dashboard
 
             // Initialize Discord RPC
             InitializeDiscordRPC();
+
+            // Initialize cache manager and cleanup expired entries
+            InitializeCache();
         }
 
         private void InitializeNewSettings()
@@ -297,20 +354,47 @@ namespace CloudLauncher.forms.dashboard
 
         private void ScanInstalledVersions()
         {
-            _installedVersions.Clear();
-            var versionsDir = _minecraftPath.Versions;
-            if (Directory.Exists(versionsDir))
+            try
             {
-                foreach (var dir in Directory.GetDirectories(versionsDir))
+                _installedVersions.Clear();
+                var cacheManager = CacheManager.Instance;
+                var cacheKey = "installed_versions";
+                
+                // Check if we have cached installed versions that are still valid (5 minutes)
+                if (cacheManager.HasValidCache(cacheKey))
                 {
-                    var versionName = Path.GetFileName(dir);
-                    if (File.Exists(Path.Combine(dir, $"{versionName}.json")))
+                    var cachedVersions = cacheManager.Get<List<string>>(cacheKey);
+                    if (cachedVersions != null)
                     {
-                        _installedVersions.Add(versionName);
+                        _installedVersions.AddRange(cachedVersions);
+                        Logger.Info($"Found {_installedVersions.Count} installed versions from cache");
+                        return;
                     }
                 }
+
+                // Scan filesystem for installed versions
+                var versionsDir = _minecraftPath.Versions;
+                if (Directory.Exists(versionsDir))
+                {
+                    foreach (var dir in Directory.GetDirectories(versionsDir))
+                    {
+                        var versionName = Path.GetFileName(dir);
+                        if (File.Exists(Path.Combine(dir, $"{versionName}.json")))
+                        {
+                            _installedVersions.Add(versionName);
+                        }
+                    }
+                }
+                
+                // Cache the installed versions list for 5 minutes
+                cacheManager.Set(cacheKey, _installedVersions, TimeSpan.FromMinutes(5));
+                Logger.Info($"Found {_installedVersions.Count} installed versions");
             }
-            Logger.Info($"Found {_installedVersions.Count} installed versions");
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to scan installed versions: {ex.Message}");
+                _installedVersions.Clear();
+            }
         }
 
         private async void LoadVersions()
@@ -320,9 +404,56 @@ namespace CloudLauncher.forms.dashboard
                 // First scan for installed versions
                 ScanInstalledVersions();
 
-                // Then get available versions from the launcher
-                var versionCollection = await _launcher.GetAllVersionsAsync();
-                _allVersions = versionCollection.ToList();
+                // Check if we have cached version metadata
+                var cacheManager = CacheManager.Instance;
+                var cachedVersionsJson = cacheManager.GetCachedVersionMetadata();
+                
+                if (!string.IsNullOrEmpty(cachedVersionsJson))
+                {
+                    try
+                    {
+                        // Try to deserialize cached versions
+                        var cachedVersions = JsonSerializer.Deserialize<List<CachedVersionMetadata>>(cachedVersionsJson);
+                        if (cachedVersions != null)
+                        {
+                            _allVersions = cachedVersions.Cast<IVersionMetadata>().ToList();
+                            Logger.Info($"Loaded {_allVersions.Count} versions from cache");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Warning($"Failed to load cached versions: {ex.Message}");
+                        cachedVersionsJson = null; // Force reload from network
+                    }
+                }
+
+                // If no cached versions or cache is invalid, load from network
+                if (string.IsNullOrEmpty(cachedVersionsJson) || _allVersions.Count == 0)
+                {
+                    Logger.Info("Loading versions from network...");
+                    var versionCollection = await _launcher.GetAllVersionsAsync();
+                    _allVersions = versionCollection.ToList();
+
+                    // Cache the version metadata
+                    try
+                    {
+                        var cacheableVersions = _allVersions.Select(v => new CachedVersionMetadata
+                        {
+                            Name = v.Name,
+                            Type = v.Type,
+                            ReleaseTime = v.ReleaseTime,
+                            Url = ""
+                        }).ToList();
+                        
+                        var versionsJson = JsonSerializer.Serialize(cacheableVersions);
+                        cacheManager.CacheVersionMetadata(versionsJson);
+                        Logger.Info("Version metadata cached successfully");
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Warning($"Failed to cache version metadata: {ex.Message}");
+                    }
+                }
 
                 // Add installed versions that aren't in the official list
                 foreach (var installedVersion in _installedVersions)
@@ -511,6 +642,9 @@ namespace CloudLauncher.forms.dashboard
                     ddLogLevel.SelectedIndex = logIndex;
                 }
 
+                // Update cache information
+                UpdateCacheInfo();
+
                 Logger.Info("New settings loaded successfully");
             }
             catch (Exception ex)
@@ -532,10 +666,41 @@ namespace CloudLauncher.forms.dashboard
                 {
                     try
                     {
-                        // GetVersionAsync is async, GetJavaPath is not.
-                        var version = await versionMetadata.GetVersionAsync();
-                        _currentJavaPath = _launcher.GetJavaPath(version);
-                        txtGameJavaPath.Text = _currentJavaPath;
+                        // Check if we have a cached Java path for this version
+                        var cacheKey = $"java_path_{versionMetadata.Name}";
+                        var cacheManager = CacheManager.Instance;
+                        
+                        if (cacheManager.HasValidCache(cacheKey))
+                        {
+                            var cachedJavaPath = cacheManager.Get<string>(cacheKey);
+                            if (!string.IsNullOrEmpty(cachedJavaPath) && File.Exists(cachedJavaPath))
+                            {
+                                _currentJavaPath = cachedJavaPath;
+                                txtGameJavaPath.Text = _currentJavaPath;
+                                Logger.Debug($"Using cached Java path for {versionMetadata.Name}: {_currentJavaPath}");
+                            }
+                            else
+                            {
+                                // Cached path is invalid, remove it
+                                cacheManager.Remove(cacheKey);
+                            }
+                        }
+                        
+                        // If we still don't have a valid path, discover it
+                        if (string.IsNullOrEmpty(_currentJavaPath) || !File.Exists(_currentJavaPath))
+                        {
+                            // GetVersionAsync is async, GetJavaPath is not.
+                            var version = await versionMetadata.GetVersionAsync();
+                            _currentJavaPath = _launcher.GetJavaPath(version);
+                            txtGameJavaPath.Text = _currentJavaPath;
+                            
+                            // Cache the Java path for 24 hours
+                            if (!string.IsNullOrEmpty(_currentJavaPath) && File.Exists(_currentJavaPath))
+                            {
+                                cacheManager.Set(cacheKey, _currentJavaPath, TimeSpan.FromHours(24));
+                                Logger.Debug($"Cached Java path for {versionMetadata.Name}: {_currentJavaPath}");
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -1049,9 +1214,10 @@ namespace CloudLauncher.forms.dashboard
             }
             else
             {
-                // Dispose Discord RPC client
+                // Dispose Discord RPC client and cache manager
                 _discordClient?.Dispose();
                 _trayIcon?.Dispose();
+                CacheManager.Instance?.Dispose();
             }
         }
 
@@ -1074,6 +1240,98 @@ namespace CloudLauncher.forms.dashboard
             {
                 RegistryConfig.SaveUserPreference("WindowX", this.Location.X);
                 RegistryConfig.SaveUserPreference("WindowY", this.Location.Y);
+            }
+        }
+
+        #endregion
+
+        #region Cache Management Methods
+
+        private void btnClearCache_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (MessageBox.Show("Are you sure you want to clear all cached data? This will require re-downloading version information and user avatars.", 
+                    "Clear Cache", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    CacheManager.Instance.ClearAllCache();
+                    Alert.Info("Cache cleared successfully! Some data may need to be re-downloaded.");
+                    
+                    // Refresh the cache size display
+                    UpdateCacheInfo();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to clear cache: {ex.Message}");
+                Alert.Error("Failed to clear cache. Check the logs for details.");
+            }
+        }
+
+        private void btnRefreshVersions_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Clear version cache to force refresh
+                CacheManager.Instance.Remove("minecraft_versions");
+                
+                // Reload versions
+                LoadVersions();
+                
+                Alert.Info("Minecraft versions refreshed successfully!");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to refresh versions: {ex.Message}");
+                Alert.Error("Failed to refresh versions. Check the logs for details.");
+            }
+        }
+
+        private void UpdateCacheInfo()
+        {
+            try
+            {
+                var cacheManager = CacheManager.Instance;
+                long cacheSize = cacheManager.GetCacheSize();
+                string formattedSize = FormatBytes(cacheSize);
+                
+                // Update UI labels if they exist
+                // Update UI labels
+                if (lblCacheSize != null)
+                {
+                    lblCacheSize.Text = $"Cache Size: {formattedSize}";
+                }
+                
+                Logger.Info($"Cache size: {formattedSize}");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to update cache info: {ex.Message}");
+                if (lblCacheSize != null)
+                {
+                    lblCacheSize.Text = "Cache Size: Unknown";
+                }
+            }
+        }
+
+        private void btnOpenCacheFolder_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                string cachePath = Path.Combine(appDataPath, ".cloudlauncher", "cache");
+
+                if (!Directory.Exists(cachePath))
+                {
+                    Directory.CreateDirectory(cachePath);
+                }
+
+                System.Diagnostics.Process.Start("explorer.exe", cachePath);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to open cache folder: {ex.Message}");
+                Alert.Error("Failed to open cache folder. Check the logs for details.");
             }
         }
 
@@ -1148,25 +1406,27 @@ namespace CloudLauncher.forms.dashboard
             {
                 string avatarUrl = $"https://mc-heads.net/avatar/{username}";
 
-                using (var httpClient = new HttpClient())
+                // Try to get cached avatar first
+                var cacheManager = CacheManager.Instance;
+                var cachedImage = await cacheManager.GetOrDownloadImageAsync(avatarUrl, TimeSpan.FromDays(7));
+
+                if (cachedImage != null)
                 {
-                    httpClient.Timeout = TimeSpan.FromSeconds(10);
-                    byte[] imageBytes = await httpClient.GetByteArrayAsync(avatarUrl);
-
-                    using (var stream = new MemoryStream(imageBytes))
+                    // Ensure we're on the UI thread when setting the image
+                    if (pbUserProfile.InvokeRequired)
                     {
-                        var image = Image.FromStream(stream);
-
-                        // Ensure we're on the UI thread when setting the image
-                        if (pbUserProfile.InvokeRequired)
-                        {
-                            pbUserProfile.Invoke(new Action(() => pbUserProfile.Image = image));
-                        }
-                        else
-                        {
-                            pbUserProfile.Image = image;
-                        }
+                        pbUserProfile.Invoke(new Action(() => pbUserProfile.Image = cachedImage));
                     }
+                    else
+                    {
+                        pbUserProfile.Image = cachedImage;
+                    }
+                    
+                    Logger.Debug($"Loaded avatar for user '{username}' from cache");
+                }
+                else
+                {
+                    throw new Exception("Failed to load avatar from cache or network");
                 }
             }
             catch (Exception ex)
@@ -1250,6 +1510,33 @@ namespace CloudLauncher.forms.dashboard
         #endregion
 
         #region Discord RPC Methods
+
+        private void InitializeCache()
+        {
+            try
+            {
+                // Clean up expired cache entries on startup
+                CacheManager.Instance.ClearExpiredCache();
+                
+                // Check if we should perform a full cache cleanup (once per day)
+                var lastCleanup = RegistryConfig.GetUserPreference<string>("LastCacheCleanup", "");
+                if (string.IsNullOrEmpty(lastCleanup) || 
+                    !DateTime.TryParse(lastCleanup, out var lastCleanupDate) || 
+                    DateTime.Now.Subtract(lastCleanupDate).TotalDays >= 1)
+                {
+                    // Perform full cache cleanup
+                    CacheManager.Instance.ClearExpiredCache();
+                    RegistryConfig.SaveUserPreference("LastCacheCleanup", DateTime.Now.ToString());
+                    Logger.Info("Performed daily cache cleanup");
+                }
+                
+                Logger.Info("Cache manager initialized successfully");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to initialize cache manager: {ex.Message}");
+            }
+        }
 
         private void InitializeDiscordRPC()
         {

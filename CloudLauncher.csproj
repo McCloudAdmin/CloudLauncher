@@ -63,6 +63,7 @@
     <None Remove="docs\styles.md" />
     <None Remove="docs\plugin_api_reference.md" />
     <None Remove="docs\plugin_development.md" />
+    <None Remove="docs\cache_management.md" />
   </ItemGroup>
 
 
@@ -106,6 +107,7 @@
     <EmbeddedResource Include="docs\styles.md" />
     <EmbeddedResource Include="docs\plugin_api_reference.md" />
     <EmbeddedResource Include="docs\plugin_development.md" />
+    <EmbeddedResource Include="docs\cache_management.md" />
   </ItemGroup>
 
   <ItemGroup>
