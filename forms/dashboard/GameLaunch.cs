@@ -10,6 +10,9 @@ using System.Data;
 using DiscordRPC;
 using DiscordRPC.Logging;
 using System.Text.Json;
+using CloudLauncher.forms.dashboard.Game;
+using System.Diagnostics;
+using System.IO;
 
 namespace CloudLauncher.forms.dashboard
 {
@@ -31,6 +34,7 @@ namespace CloudLauncher.forms.dashboard
         private NotifyIcon _trayIcon;
         private DiscordRpcClient _discordClient;
         private DateTime _gameStartTime;
+        private GameLog logForm;
 
         #endregion
 
@@ -82,12 +86,12 @@ namespace CloudLauncher.forms.dashboard
                 var launcher = new MinecraftLauncher(new MinecraftPath());
                 var allVersions = await launcher.GetAllVersionsAsync();
                 var actualVersion = allVersions.FirstOrDefault(v => v.Name == this.Name);
-                
+
                 if (actualVersion != null)
                 {
                     return await actualVersion.GetVersionAsync(cancellationToken);
                 }
-                
+
                 throw new InvalidOperationException($"Version {Name} not found in actual version list");
             }
 
@@ -96,12 +100,12 @@ namespace CloudLauncher.forms.dashboard
                 var launcher = new MinecraftLauncher(path);
                 var allVersions = await launcher.GetAllVersionsAsync();
                 var actualVersion = allVersions.FirstOrDefault(v => v.Name == this.Name);
-                
+
                 if (actualVersion != null)
                 {
                     return await actualVersion.GetAndSaveVersionAsync(path, cancellationToken);
                 }
-                
+
                 throw new InvalidOperationException($"Version {Name} not found in actual version list");
             }
 
@@ -110,7 +114,7 @@ namespace CloudLauncher.forms.dashboard
                 var launcher = new MinecraftLauncher(path);
                 var allVersions = await launcher.GetAllVersionsAsync();
                 var actualVersion = allVersions.FirstOrDefault(v => v.Name == this.Name);
-                
+
                 if (actualVersion != null)
                 {
                     await actualVersion.SaveVersionAsync(path, cancellationToken);
@@ -372,7 +376,7 @@ namespace CloudLauncher.forms.dashboard
                 _installedVersions.Clear();
                 var cacheManager = CacheManager.Instance;
                 var cacheKey = "installed_versions";
-                
+
                 // Check if we have cached installed versions that are still valid (5 minutes)
                 if (cacheManager.HasValidCache(cacheKey))
                 {
@@ -398,7 +402,7 @@ namespace CloudLauncher.forms.dashboard
                         }
                     }
                 }
-                
+
                 // Cache the installed versions list for 5 minutes
                 cacheManager.Set(cacheKey, _installedVersions, TimeSpan.FromMinutes(5));
                 Logger.Info($"Found {_installedVersions.Count} installed versions");
@@ -420,7 +424,7 @@ namespace CloudLauncher.forms.dashboard
                 // Check if we have cached version metadata
                 var cacheManager = CacheManager.Instance;
                 var cachedVersionsJson = cacheManager.GetCachedVersionMetadata();
-                
+
                 if (!string.IsNullOrEmpty(cachedVersionsJson))
                 {
                     try
@@ -457,7 +461,7 @@ namespace CloudLauncher.forms.dashboard
                             ReleaseTime = v.ReleaseTime,
                             Url = ""
                         }).ToList();
-                        
+
                         var versionsJson = JsonSerializer.Serialize(cacheableVersions);
                         cacheManager.CacheVersionMetadata(versionsJson);
                         Logger.Info("Version metadata cached successfully");
@@ -682,7 +686,7 @@ namespace CloudLauncher.forms.dashboard
                         // Check if we have a cached Java path for this version
                         var cacheKey = $"java_path_{versionMetadata.Name}";
                         var cacheManager = CacheManager.Instance;
-                        
+
                         if (cacheManager.HasValidCache(cacheKey))
                         {
                             var cachedJavaPath = cacheManager.Get<string>(cacheKey);
@@ -698,7 +702,7 @@ namespace CloudLauncher.forms.dashboard
                                 cacheManager.Remove(cacheKey);
                             }
                         }
-                        
+
                         // If we still don't have a valid path, discover it
                         if (string.IsNullOrEmpty(_currentJavaPath) || !File.Exists(_currentJavaPath))
                         {
@@ -706,7 +710,7 @@ namespace CloudLauncher.forms.dashboard
                             var version = await versionMetadata.GetVersionAsync();
                             _currentJavaPath = _launcher.GetJavaPath(version);
                             txtGameJavaPath.Text = _currentJavaPath;
-                            
+
                             // Cache the Java path for 24 hours
                             if (!string.IsNullOrEmpty(_currentJavaPath) && File.Exists(_currentJavaPath))
                             {
@@ -812,10 +816,54 @@ namespace CloudLauncher.forms.dashboard
                     return;
                 }
 
+                // Prepare game log
+                PrepareGameLog(version.Name);
+
                 // Install and launch
                 await _launcher.InstallAsync(version.Name);
                 var process = await _launcher.CreateProcessAsync(version.Name, launchOption);
-                process.Start();
+                
+                // Enable output redirection for logging (if supported)
+                try
+                {
+                    process.EnableRaisingEvents = true;
+                    process.Exited += Process_Exited;
+                    
+                    // Check if output redirection is available
+                    if (process.StartInfo.RedirectStandardOutput && process.StartInfo.RedirectStandardError)
+                    {
+                        process.OutputDataReceived += Process_OutputDataReceived;
+                        process.ErrorDataReceived += Process_ErrorDataReceived;
+                        
+                        process.Start();
+                        
+                        // Start asynchronous output reading
+                        process.BeginOutputReadLine();
+                        process.BeginErrorReadLine();
+                        
+                        OutputToLog("Game process started with output redirection enabled");
+                    }
+                    else
+                    {
+                        // Output redirection not available, start without it
+                        process.Start();
+                        OutputToLog("Game process started (output redirection not available)");
+                        Logger.Warning("Process output redirection is not enabled by CmlLib launcher");
+                    }
+                }
+                catch (Exception logEx)
+                {
+                    // If output redirection fails, start the process normally
+                    Logger.Warning($"Failed to enable output redirection: {logEx.Message}");
+                    OutputToLog($"Game process started without output logging: {logEx.Message}");
+                    
+                    // Remove event handlers to prevent issues
+                    process.OutputDataReceived -= Process_OutputDataReceived;
+                    process.ErrorDataReceived -= Process_ErrorDataReceived;
+                    
+                    // Start the process normally
+                    process.Start();
+                }
                 this.WindowState = FormWindowState.Minimized; // Minimize the launcher window
 
                 Logger.Info($"Launched Minecraft {version.Name} with {launchOption.MaximumRamMb}MB RAM");
@@ -1060,7 +1108,7 @@ namespace CloudLauncher.forms.dashboard
         {
             RegistryConfig.SaveUserPreference("DiscordRPCEnabled", cbDiscordRPCEnabled.Checked);
             Logger.Info($"Discord RPC enabled: {cbDiscordRPCEnabled.Checked}");
-            
+
             if (cbDiscordRPCEnabled.Checked)
             {
                 InitializeDiscordRPC();
@@ -1076,7 +1124,7 @@ namespace CloudLauncher.forms.dashboard
         {
             RegistryConfig.SaveUserPreference("DiscordShowDetails", cbDiscordShowDetails.Checked);
             Logger.Info($"Discord show details: {cbDiscordShowDetails.Checked}");
-            
+
             // Update presence immediately if Discord is connected
             if (_discordClient?.IsInitialized == true)
             {
@@ -1088,7 +1136,7 @@ namespace CloudLauncher.forms.dashboard
         {
             RegistryConfig.SaveUserPreference("DiscordShowTime", cbDiscordShowTime.Checked);
             Logger.Info($"Discord show time: {cbDiscordShowTime.Checked}");
-            
+
             // Update presence immediately if Discord is connected
             if (_discordClient?.IsInitialized == true)
             {
@@ -1100,7 +1148,7 @@ namespace CloudLauncher.forms.dashboard
         {
             RegistryConfig.SaveUserPreference("DiscordApplicationId", txtDiscordApplicationId.Text);
             Logger.Info($"Discord Application ID updated");
-            
+
             // Reinitialize Discord RPC with new Application ID
             if (cbDiscordRPCEnabled.Checked)
             {
@@ -1112,7 +1160,7 @@ namespace CloudLauncher.forms.dashboard
         private void txtDiscordCustomDetails_TextChanged(object sender, EventArgs e)
         {
             RegistryConfig.SaveUserPreference("DiscordCustomDetails", txtDiscordCustomDetails.Text);
-            
+
             // Update presence immediately if Discord is connected
             if (_discordClient?.IsInitialized == true)
             {
@@ -1123,7 +1171,7 @@ namespace CloudLauncher.forms.dashboard
         private void txtDiscordCustomState_TextChanged(object sender, EventArgs e)
         {
             RegistryConfig.SaveUserPreference("DiscordCustomState", txtDiscordCustomState.Text);
-            
+
             // Update presence immediately if Discord is connected
             if (_discordClient?.IsInitialized == true)
             {
@@ -1227,10 +1275,20 @@ namespace CloudLauncher.forms.dashboard
             }
             else
             {
+                // Stop log file monitoring
+                StopMinecraftLogFileMonitoring();
+                
                 // Dispose Discord RPC client and cache manager
                 _discordClient?.Dispose();
                 _trayIcon?.Dispose();
                 CacheManager.Instance?.Dispose();
+                
+                // Dispose log form
+                if (logForm != null)
+                {
+                    logForm.Close();
+                    logForm = null;
+                }
             }
         }
 
@@ -1264,18 +1322,18 @@ namespace CloudLauncher.forms.dashboard
         {
             try
             {
-                if (MessageBox.Show("Are you sure you want to clear all cached data? This will require re-downloading version information, user avatars, and re-rendering UI elements.", 
+                if (MessageBox.Show("Are you sure you want to clear all cached data? This will require re-downloading version information, user avatars, and re-rendering UI elements.",
                     "Clear Cache", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     // Clear all cache including UI rendering cache
                     CacheManager.Instance.ClearAllCache();
                     UIRenderCache.ClearUICache();
-                    
+
                     Alert.Info("Cache cleared successfully! Some data may need to be re-downloaded and UI elements re-rendered.");
-                    
+
                     // Re-initialize UI cache for current session
                     InitializeUICache();
-                    
+
                     // Refresh the cache size display
                     UpdateCacheInfo();
                 }
@@ -1293,10 +1351,10 @@ namespace CloudLauncher.forms.dashboard
             {
                 // Clear version cache to force refresh
                 CacheManager.Instance.Remove("minecraft_versions");
-                
+
                 // Reload versions
                 LoadVersions();
-                
+
                 Alert.Info("Minecraft versions refreshed successfully!");
             }
             catch (Exception ex)
@@ -1313,14 +1371,14 @@ namespace CloudLauncher.forms.dashboard
                 var cacheManager = CacheManager.Instance;
                 long cacheSize = cacheManager.GetCacheSize();
                 string formattedSize = FormatBytes(cacheSize);
-                
+
                 // Update UI labels if they exist
                 // Update UI labels
                 if (lblCacheSize != null)
                 {
                     lblCacheSize.Text = $"Cache Size: {formattedSize}";
                 }
-                
+
                 Logger.Info($"Cache size: {formattedSize}");
             }
             catch (Exception ex)
@@ -1351,6 +1409,19 @@ namespace CloudLauncher.forms.dashboard
             {
                 Logger.Error($"Failed to open cache folder: {ex.Message}");
                 Alert.Error("Failed to open cache folder. Check the logs for details.");
+            }
+        }
+
+        private void btnShowGameLog_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ToggleGameLog();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to toggle game log: {ex.Message}");
+                Alert.Error("Failed to toggle game log. Check the logs for details.");
             }
         }
 
@@ -1440,7 +1511,7 @@ namespace CloudLauncher.forms.dashboard
                     {
                         pbUserProfile.Image = cachedImage;
                     }
-                    
+
                     Logger.Debug($"Loaded avatar for user '{username}' from cache");
                 }
                 else
@@ -1515,7 +1586,7 @@ namespace CloudLauncher.forms.dashboard
             this.ShowInTaskbar = true;
             _trayIcon.Visible = false;
             this.BringToFront();
-            
+
             // Reset Discord presence when returning to launcher
             ResetDiscordPresence();
         }
@@ -1536,11 +1607,11 @@ namespace CloudLauncher.forms.dashboard
             {
                 // Clean up expired cache entries on startup
                 CacheManager.Instance.ClearExpiredCache();
-                
+
                 // Check if we should perform a full cache cleanup (once per day)
                 var lastCleanup = RegistryConfig.GetUserPreference<string>("LastCacheCleanup", "");
-                if (string.IsNullOrEmpty(lastCleanup) || 
-                    !DateTime.TryParse(lastCleanup, out var lastCleanupDate) || 
+                if (string.IsNullOrEmpty(lastCleanup) ||
+                    !DateTime.TryParse(lastCleanup, out var lastCleanupDate) ||
                     DateTime.Now.Subtract(lastCleanupDate).TotalDays >= 1)
                 {
                     // Perform full cache cleanup
@@ -1548,7 +1619,7 @@ namespace CloudLauncher.forms.dashboard
                     RegistryConfig.SaveUserPreference("LastCacheCleanup", DateTime.Now.ToString());
                     Logger.Info("Performed daily cache cleanup");
                 }
-                
+
                 Logger.Info("Cache manager initialized successfully");
             }
             catch (Exception ex)
@@ -1563,12 +1634,12 @@ namespace CloudLauncher.forms.dashboard
             {
                 // Pre-cache common gradients and backgrounds used in the UI
                 var formSize = this.Size;
-                
+
                 // Cache main background gradient
                 var mainBackground = UIRenderCache.GetOrCreateGradientBackground(
-                    "main_bg", 
-                    formSize, 
-                    Color.FromArgb(15, 15, 15), 
+                    "main_bg",
+                    formSize,
+                    Color.FromArgb(15, 15, 15),
                     Color.FromArgb(25, 25, 25),
                     System.Drawing.Drawing2D.LinearGradientMode.Vertical
                 );
@@ -1623,7 +1694,7 @@ namespace CloudLauncher.forms.dashboard
                 }
 
                 _discordClient = new DiscordRpcClient(applicationId);
-                _discordClient.Logger = new ConsoleLogger() {};
+                _discordClient.Logger = new ConsoleLogger() { };
 
                 // Subscribe to events
                 _discordClient.OnReady += (sender, e) =>
@@ -1715,6 +1786,359 @@ namespace CloudLauncher.forms.dashboard
             catch (Exception ex)
             {
                 Logger.Error($"Failed to reset Discord presence: {ex.Message}");
+            }
+        }
+
+        #endregion
+
+
+        #region GameLog Logic
+        
+        private FileSystemWatcher _logFileWatcher;
+        private string _currentLogFile;
+        private long _lastLogPosition = 0;
+        
+        private void InitializeLogForm()
+        {
+            try
+            {
+                if (logForm == null)
+                {
+                    logForm = new GameLog();
+                    logForm.FormClosed += (s, e) => logForm = null; // Reset reference when closed
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to initialize log form: {ex.Message}");
+            }
+        }
+
+        private void ShowGameLog()
+        {
+            try
+            {
+                InitializeLogForm();
+                if (logForm != null)
+                {
+                    if (logForm.WindowState == FormWindowState.Minimized)
+                    {
+                        logForm.WindowState = FormWindowState.Normal;
+                    }
+                    logForm.Show();
+                    logForm.BringToFront();
+                    Logger.Info("Game log window shown");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to show game log: {ex.Message}");
+            }
+        }
+
+        private void HideGameLog()
+        {
+            try
+            {
+                if (logForm != null && logForm.Visible)
+                {
+                    logForm.Hide();
+                    Logger.Info("Game log window hidden");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to hide game log: {ex.Message}");
+            }
+        }
+
+        private void ClearGameLog()
+        {
+            try
+            {
+                GameLog.ClearLog();
+                Logger.Debug("Game log cleared");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to clear game log: {ex.Message}");
+            }
+        }
+
+        private void ToggleGameLog()
+        {
+            try
+            {
+                if (logForm == null || !logForm.Visible)
+                {
+                    ShowGameLog();
+                }
+                else
+                {
+                    HideGameLog();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to toggle game log: {ex.Message}");
+            }
+        }
+
+        private void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(e.Data))
+            {
+                OutputToLog($"[OUTPUT] {e.Data}");
+            }
+        }
+
+        private void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(e.Data))
+            {
+                OutputToLog($"[ERROR] {e.Data}");
+            }
+        }
+
+        private void OutputToLog(string msg)
+        {
+            try
+            {
+                GameLog.AddLog(msg);
+                
+                // Auto-show log on first output (optional behavior)
+                bool autoShowLog = RegistryConfig.GetUserPreference("AutoShowGameLog", true);
+                if (autoShowLog && (logForm == null || !logForm.Visible))
+                {
+                    ShowGameLog();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to output to log: {ex.Message}");
+            }
+        }
+
+        private void Process_Exited(object sender, EventArgs e)
+        {
+            try
+            {
+                var process = sender as Process;
+                int exitCode = process?.ExitCode ?? -1;
+                
+                OutputToLog($"=== Minecraft process exited with code: {exitCode} ===");
+                
+                // Log additional process information
+                if (process != null)
+                {
+                    OutputToLog($"Process ID: {process.Id}");
+                    OutputToLog($"Start time: {process.StartTime}");
+                    OutputToLog($"Exit time: {process.ExitTime}");
+                    OutputToLog($"Total runtime: {process.ExitTime - process.StartTime}");
+                }
+                
+                // Stop log file monitoring
+                StopMinecraftLogFileMonitoring();
+                
+                // Auto-hide log after process exits (optional behavior)
+                bool autoHideLog = RegistryConfig.GetUserPreference("AutoHideGameLog", false);
+                if (autoHideLog)
+                {
+                    // Delay hiding to allow user to see final messages
+                    var hideTimer = new System.Windows.Forms.Timer();
+                    hideTimer.Interval = 5000; // 5 seconds
+                    hideTimer.Tick += (s, args) =>
+                    {
+                        HideGameLog();
+                        hideTimer.Stop();
+                        hideTimer.Dispose();
+                    };
+                    hideTimer.Start();
+                }
+                
+                Logger.Info($"Minecraft process exited with code: {exitCode}");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to handle process exit: {ex.Message}");
+                OutputToLog($"Error handling process exit: {ex.Message}");
+            }
+        }
+
+        // Method to be called when game launch starts
+        private void StartMinecraftLogFileMonitoring()
+        {
+            try
+            {
+                // Stop any existing monitoring
+                StopMinecraftLogFileMonitoring();
+                
+                // Get Minecraft logs directory
+                string logsPath = Path.Combine(_minecraftPath.BasePath, "logs");
+                
+                if (!Directory.Exists(logsPath))
+                {
+                    OutputToLog("Minecraft logs directory not found, creating...");
+                    Directory.CreateDirectory(logsPath);
+                }
+                
+                // Find the latest log file
+                _currentLogFile = Path.Combine(logsPath, "latest.log");
+                _lastLogPosition = 0;
+                
+                // Reset log position if file exists
+                if (File.Exists(_currentLogFile))
+                {
+                    _lastLogPosition = new FileInfo(_currentLogFile).Length;
+                }
+                
+                // Set up file watcher
+                _logFileWatcher = new FileSystemWatcher(logsPath)
+                {
+                    Filter = "*.log",
+                    NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size | NotifyFilters.CreationTime,
+                    EnableRaisingEvents = true
+                };
+                
+                _logFileWatcher.Changed += OnLogFileChanged;
+                _logFileWatcher.Created += OnLogFileCreated;
+                
+                OutputToLog("Started monitoring Minecraft log files");
+                Logger.Info("Started Minecraft log file monitoring");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to start log file monitoring: {ex.Message}");
+                OutputToLog($"Failed to start log file monitoring: {ex.Message}");
+            }
+        }
+        
+        private void StopMinecraftLogFileMonitoring()
+        {
+            try
+            {
+                if (_logFileWatcher != null)
+                {
+                    _logFileWatcher.EnableRaisingEvents = false;
+                    _logFileWatcher.Changed -= OnLogFileChanged;
+                    _logFileWatcher.Created -= OnLogFileCreated;
+                    _logFileWatcher.Dispose();
+                    _logFileWatcher = null;
+                    
+                    OutputToLog("Stopped monitoring Minecraft log files");
+                    Logger.Info("Stopped Minecraft log file monitoring");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to stop log file monitoring: {ex.Message}");
+            }
+        }
+        
+        private void OnLogFileCreated(object sender, FileSystemEventArgs e)
+        {
+            try
+            {
+                if (e.Name == "latest.log")
+                {
+                    _currentLogFile = e.FullPath;
+                    _lastLogPosition = 0;
+                    OutputToLog("New Minecraft log file detected");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error handling log file creation: {ex.Message}");
+            }
+        }
+        
+        private void OnLogFileChanged(object sender, FileSystemEventArgs e)
+        {
+            try
+            {
+                if (e.Name == "latest.log" && File.Exists(e.FullPath))
+                {
+                    ReadNewLogLines(e.FullPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error reading log file changes: {ex.Message}");
+            }
+        }
+        
+        private void ReadNewLogLines(string logFilePath)
+        {
+            try
+            {
+                using (var fileStream = new FileStream(logFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                {
+                    if (fileStream.Length <= _lastLogPosition)
+                        return;
+                        
+                    fileStream.Seek(_lastLogPosition, SeekOrigin.Begin);
+                    
+                    using (var reader = new StreamReader(fileStream))
+                    {
+                        string line;
+                        while ((line = reader.ReadLine()) != null)
+                        {
+                            if (!string.IsNullOrWhiteSpace(line))
+                            {
+                                // Format and output the line
+                                OutputToLog($"[MC] {line}");
+                            }
+                        }
+                    }
+                    
+                    _lastLogPosition = fileStream.Position;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error reading new log lines: {ex.Message}");
+            }
+        }
+
+        private void PrepareGameLog(string version)
+        {
+            try
+            {
+                // Clear previous logs
+                ClearGameLog();
+                
+                // Add launch header
+                OutputToLog("=== CloudLauncher Game Log ===");
+                OutputToLog($"Launching Minecraft {version}");
+                OutputToLog($"Time: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                OutputToLog($"User: {_currentSession?.Username ?? "Guest"}");
+                OutputToLog($"Java Path: {_currentJavaPath ?? "Auto-detect"}");
+                OutputToLog($"RAM Allocation: {tBRam.Value}MB");
+                OutputToLog($"Screen Size: {txtGameScreenWidth.Text}x{txtGameScreenHeight.Text}");
+                OutputToLog($"Full Screen: {cbFullScreen.Checked}");
+                
+                if (!string.IsNullOrEmpty(txtJoinServerIP.Text))
+                {
+                    OutputToLog($"Joining Server: {txtJoinServerIP.Text}:{txtJoinServerPort.Text}");
+                }
+                
+                if (!string.IsNullOrEmpty(txtCustomArgs.Text))
+                {
+                    OutputToLog($"Custom JVM Args: {txtCustomArgs.Text}");
+                }
+                
+                OutputToLog("================================");
+                OutputToLog("Starting game process...");
+                
+                // Start monitoring Minecraft log files as fallback
+                StartMinecraftLogFileMonitoring();
+                
+                Logger.Info($"Game log prepared for Minecraft {version}");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to prepare game log: {ex.Message}");
+                OutputToLog($"Error preparing game log: {ex.Message}");
             }
         }
 
