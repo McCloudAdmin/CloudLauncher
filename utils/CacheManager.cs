@@ -221,6 +221,276 @@ namespace CloudLauncher.utils
             }
         }
 
+        public Image GetOrCacheProcessedImage(string imagePath, Func<Image> imageProcessor, TimeSpan? expiration = null)
+        {
+            try
+            {
+                var cacheKey = $"processed_image_{imagePath.GetHashCode()}";
+                
+                // Check if we have cached processed image
+                if (HasValidCache(cacheKey))
+                {
+                    var cachedBytes = Get<byte[]>(cacheKey);
+                    if (cachedBytes != null)
+                    {
+                        using (var stream = new MemoryStream(cachedBytes))
+                        {
+                            Logger.Debug($"Retrieved processed image from cache: {imagePath}");
+                            return Image.FromStream(stream);
+                        }
+                    }
+                }
+
+                // Process the image
+                var processedImage = imageProcessor();
+                if (processedImage != null)
+                {
+                    // Convert to bytes and cache
+                    using (var stream = new MemoryStream())
+                    {
+                        processedImage.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+                        var imageBytes = stream.ToArray();
+                        Set(cacheKey, imageBytes, expiration ?? TimeSpan.FromHours(12));
+                        Logger.Debug($"Cached processed image: {imagePath}");
+                    }
+                }
+
+                return processedImage;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to process and cache image {imagePath}: {ex.Message}");
+                return null;
+            }
+        }
+
+        public void CacheUIElement(string elementKey, object elementData, TimeSpan? expiration = null)
+        {
+            try
+            {
+                var cacheKey = $"ui_element_{elementKey}";
+                Set(cacheKey, elementData, expiration ?? TimeSpan.FromHours(6));
+                Logger.Debug($"Cached UI element: {elementKey}");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to cache UI element {elementKey}: {ex.Message}");
+            }
+        }
+
+        public T GetCachedUIElement<T>(string elementKey)
+        {
+            try
+            {
+                var cacheKey = $"ui_element_{elementKey}";
+                var result = Get<T>(cacheKey);
+                if (result != null)
+                {
+                    Logger.Debug($"Retrieved UI element from cache: {elementKey}");
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to get cached UI element {elementKey}: {ex.Message}");
+                return default(T);
+            }
+        }
+
+        public void CacheRenderedBackground(string backgroundKey, Image background, TimeSpan? expiration = null)
+        {
+            try
+            {
+                using (var stream = new MemoryStream())
+                {
+                    background.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+                    var cacheKey = $"bg_render_{backgroundKey}";
+                    Set(cacheKey, stream.ToArray(), expiration ?? TimeSpan.FromDays(1));
+                    Logger.Debug($"Cached rendered background: {backgroundKey}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to cache rendered background {backgroundKey}: {ex.Message}");
+            }
+        }
+
+        public Image GetCachedRenderedBackground(string backgroundKey)
+        {
+            try
+            {
+                var cacheKey = $"bg_render_{backgroundKey}";
+                var cachedBytes = Get<byte[]>(cacheKey);
+                if (cachedBytes != null)
+                {
+                    using (var stream = new MemoryStream(cachedBytes))
+                    {
+                        Logger.Debug($"Retrieved rendered background from cache: {backgroundKey}");
+                        return Image.FromStream(stream);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to get cached rendered background {backgroundKey}: {ex.Message}");
+            }
+            return null;
+        }
+
+        public void CacheFormLayout(string formName, FormLayoutData layoutData, TimeSpan? expiration = null)
+        {
+            try
+            {
+                var cacheKey = $"form_layout_{formName}";
+                Set(cacheKey, layoutData, expiration ?? TimeSpan.FromDays(7));
+                Logger.Debug($"Cached form layout: {formName}");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to cache form layout {formName}: {ex.Message}");
+            }
+        }
+
+        public FormLayoutData GetCachedFormLayout(string formName)
+        {
+            try
+            {
+                var cacheKey = $"form_layout_{formName}";
+                var result = Get<FormLayoutData>(cacheKey);
+                if (result != null)
+                {
+                    Logger.Debug($"Retrieved form layout from cache: {formName}");
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to get cached form layout {formName}: {ex.Message}");
+                return null;
+            }
+        }
+
+        public void CacheThemeResources(string themeName, ThemeResourceData themeData, TimeSpan? expiration = null)
+        {
+            try
+            {
+                var cacheKey = $"theme_{themeName}";
+                Set(cacheKey, themeData, expiration ?? TimeSpan.FromDays(30));
+                Logger.Debug($"Cached theme resources: {themeName}");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to cache theme resources {themeName}: {ex.Message}");
+            }
+        }
+
+        public ThemeResourceData GetCachedThemeResources(string themeName)
+        {
+            try
+            {
+                var cacheKey = $"theme_{themeName}";
+                var result = Get<ThemeResourceData>(cacheKey);
+                if (result != null)
+                {
+                    Logger.Debug($"Retrieved theme resources from cache: {themeName}");
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to get cached theme resources {themeName}: {ex.Message}");
+                return null;
+            }
+        }
+
+        public void CachePreRenderedComponent(string componentKey, Control component, TimeSpan? expiration = null)
+        {
+            try
+            {
+                // Render the control to a bitmap
+                var bitmap = new Bitmap(component.Width, component.Height);
+                component.DrawToBitmap(bitmap, new Rectangle(0, 0, component.Width, component.Height));
+                
+                using (var stream = new MemoryStream())
+                {
+                    bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+                    var cacheKey = $"component_render_{componentKey}";
+                    
+                    var renderData = new UIRenderingData
+                    {
+                        RenderedImageData = stream.ToArray(),
+                        ImageSize = component.Size,
+                        RenderingParameters = $"Size:{component.Size},BackColor:{component.BackColor},Font:{component.Font?.Name}"
+                    };
+                    
+                    Set(cacheKey, renderData, expiration ?? TimeSpan.FromHours(8));
+                    Logger.Debug($"Cached pre-rendered component: {componentKey}");
+                }
+                
+                bitmap.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to cache pre-rendered component {componentKey}: {ex.Message}");
+            }
+        }
+
+        public Image GetCachedPreRenderedComponent(string componentKey)
+        {
+            try
+            {
+                var cacheKey = $"component_render_{componentKey}";
+                var renderData = Get<UIRenderingData>(cacheKey);
+                
+                if (renderData?.RenderedImageData != null)
+                {
+                    using (var stream = new MemoryStream(renderData.RenderedImageData))
+                    {
+                        Logger.Debug($"Retrieved pre-rendered component from cache: {componentKey}");
+                        return Image.FromStream(stream);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to get cached pre-rendered component {componentKey}: {ex.Message}");
+            }
+            return null;
+        }
+
+        public void CacheComputedStyle(string styleKey, Dictionary<string, object> computedStyle, TimeSpan? expiration = null)
+        {
+            try
+            {
+                var cacheKey = $"computed_style_{styleKey}";
+                Set(cacheKey, computedStyle, expiration ?? TimeSpan.FromHours(12));
+                Logger.Debug($"Cached computed style: {styleKey}");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to cache computed style {styleKey}: {ex.Message}");
+            }
+        }
+
+        public Dictionary<string, object> GetCachedComputedStyle(string styleKey)
+        {
+            try
+            {
+                var cacheKey = $"computed_style_{styleKey}";
+                var result = Get<Dictionary<string, object>>(cacheKey);
+                if (result != null)
+                {
+                    Logger.Debug($"Retrieved computed style from cache: {styleKey}");
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to get cached computed style {styleKey}: {ex.Message}");
+                return null;
+            }
+        }
+
         public void CacheVersionMetadata(string versionsJson)
         {
             try
@@ -390,5 +660,32 @@ namespace CloudLauncher.utils
             }
             return str;
         }
+    }
+
+    // Data structures for caching UI elements
+    public class FormLayoutData
+    {
+        public Dictionary<string, Rectangle> ControlBounds { get; set; } = new Dictionary<string, Rectangle>();
+        public Size FormSize { get; set; }
+        public Point FormLocation { get; set; }
+        public Dictionary<string, Color> ControlColors { get; set; } = new Dictionary<string, Color>();
+        public Dictionary<string, Font> ControlFonts { get; set; } = new Dictionary<string, Font>();
+        public DateTime CachedAt { get; set; } = DateTime.UtcNow;
+    }
+
+    public class UIRenderingData
+    {
+        public byte[] RenderedImageData { get; set; }
+        public Size ImageSize { get; set; }
+        public DateTime RenderedAt { get; set; } = DateTime.UtcNow;
+        public string RenderingParameters { get; set; } // Store rendering settings as JSON
+    }
+
+    public class ThemeResourceData
+    {
+        public Dictionary<string, Color> Colors { get; set; } = new Dictionary<string, Color>();
+        public Dictionary<string, byte[]> Images { get; set; } = new Dictionary<string, byte[]>();
+        public Dictionary<string, string> Fonts { get; set; } = new Dictionary<string, string>();
+        public DateTime CachedAt { get; set; } = DateTime.UtcNow;
     }
 } 

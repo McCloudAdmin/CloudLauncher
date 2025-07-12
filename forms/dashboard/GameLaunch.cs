@@ -43,6 +43,11 @@ namespace CloudLauncher.forms.dashboard
             public string Url { get; set; }
             public DateTimeOffset ReleaseTime { get; set; }
 
+            public override string ToString()
+            {
+                return Name ?? "Unknown Version";
+            }
+
             public Task<IVersion> GetVersionAsync(CancellationToken cancellationToken = default)
             {
                 throw new NotImplementedException("Custom versions cannot be downloaded");
@@ -65,6 +70,11 @@ namespace CloudLauncher.forms.dashboard
             public string Type { get; set; }
             public string Url { get; set; }
             public DateTimeOffset ReleaseTime { get; set; }
+
+            public override string ToString()
+            {
+                return Name ?? "Unknown Version";
+            }
 
             public async Task<IVersion> GetVersionAsync(CancellationToken cancellationToken = default)
             {
@@ -190,6 +200,9 @@ namespace CloudLauncher.forms.dashboard
 
             // Initialize cache manager and cleanup expired entries
             InitializeCache();
+
+            // Pre-warm UI rendering cache for faster form rendering
+            InitializeUICache();
         }
 
         private void InitializeNewSettings()
@@ -1251,11 +1264,17 @@ namespace CloudLauncher.forms.dashboard
         {
             try
             {
-                if (MessageBox.Show("Are you sure you want to clear all cached data? This will require re-downloading version information and user avatars.", 
+                if (MessageBox.Show("Are you sure you want to clear all cached data? This will require re-downloading version information, user avatars, and re-rendering UI elements.", 
                     "Clear Cache", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
+                    // Clear all cache including UI rendering cache
                     CacheManager.Instance.ClearAllCache();
-                    Alert.Info("Cache cleared successfully! Some data may need to be re-downloaded.");
+                    UIRenderCache.ClearUICache();
+                    
+                    Alert.Info("Cache cleared successfully! Some data may need to be re-downloaded and UI elements re-rendered.");
+                    
+                    // Re-initialize UI cache for current session
+                    InitializeUICache();
                     
                     // Refresh the cache size display
                     UpdateCacheInfo();
@@ -1535,6 +1554,53 @@ namespace CloudLauncher.forms.dashboard
             catch (Exception ex)
             {
                 Logger.Error($"Failed to initialize cache manager: {ex.Message}");
+            }
+        }
+
+        private void InitializeUICache()
+        {
+            try
+            {
+                // Pre-cache common gradients and backgrounds used in the UI
+                var formSize = this.Size;
+                
+                // Cache main background gradient
+                var mainBackground = UIRenderCache.GetOrCreateGradientBackground(
+                    "main_bg", 
+                    formSize, 
+                    Color.FromArgb(15, 15, 15), 
+                    Color.FromArgb(25, 25, 25),
+                    System.Drawing.Drawing2D.LinearGradientMode.Vertical
+                );
+
+                // Cache sidebar background
+                var sidebarSize = new Size(301, formSize.Height);
+                var sidebarBackground = UIRenderCache.GetOrCreateGradientBackground(
+                    "sidebar_bg",
+                    sidebarSize,
+                    Color.FromArgb(25, 25, 25),
+                    Color.FromArgb(15, 15, 15),
+                    System.Drawing.Drawing2D.LinearGradientMode.Horizontal
+                );
+
+                // Cache button hover states
+                var buttonSize = new Size(256, 45);
+                var buttonHoverBg = UIRenderCache.GetOrCreateGradientBackground(
+                    "button_hover",
+                    buttonSize,
+                    Color.FromArgb(231, 80, 34),
+                    Color.FromArgb(255, 87, 34),
+                    System.Drawing.Drawing2D.LinearGradientMode.Vertical
+                );
+
+                // Pre-warm form cache for layout and styles
+                UIRenderCache.PreWarmFormCache(this);
+
+                Logger.Info("UI rendering cache initialized with pre-rendered elements");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to initialize UI cache: {ex.Message}");
             }
         }
 

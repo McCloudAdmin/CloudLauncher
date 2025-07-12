@@ -281,7 +281,7 @@
             pbStatus.BorderRadius = 6;
             pbStatus.CustomizableEdges = customizableEdges6;
             pbStatus.FillColor = Color.FromArgb(38, 38, 38);
-            pbStatus.Location = new Point(0, 0);
+            pbStatus.Location = new Point(0, -4);
             pbStatus.Name = "pbStatus";
             pbStatus.ProgressColor = Color.FromArgb(231, 80, 34);
             pbStatus.ProgressColor2 = Color.FromArgb(255, 87, 34);
@@ -1821,9 +1821,9 @@
             // launchPanel
             // 
             launchPanel.BackColor = Color.FromArgb(25, 25, 25);
+            launchPanel.Controls.Add(pbStatus);
             launchPanel.Controls.Add(lblReady);
             launchPanel.Controls.Add(btnStartGame);
-            launchPanel.Controls.Add(pbStatus);
             launchPanel.Controls.Add(dDVersions);
             launchPanel.Dock = DockStyle.Bottom;
             launchPanel.Location = new Point(301, 567);
