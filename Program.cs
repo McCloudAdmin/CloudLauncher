@@ -18,6 +18,8 @@ namespace CloudLauncher
 {
     internal static class Program
     {
+        #region Fields and Properties
+
         public static string appWorkDir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             ".cloudlauncher"
@@ -25,6 +27,10 @@ namespace CloudLauncher
         public static string appVersion = "1.0.0";
         public static string appName = "CloudLauncher";
         public static string appAuthor = "CloudLauncher";
+
+        #endregion
+
+        #region Application Entry Point
 
         /// <summary>
         ///  The main entry point for the application.
@@ -75,151 +81,7 @@ namespace CloudLauncher
             try
             {
                 // Try auto-login first
-                bool keepLoggedIn = RegistryConfig.GetUserPreference("KeepLoggedIn", false);
-                Logger.Info($"Auto-login enabled: {keepLoggedIn}");
-                if (keepLoggedIn)
-                {
-                    string lastUsername = RegistryConfig.GetUserPreference<string>("LastUsername");
-                    string lastUUID = RegistryConfig.GetUserPreference<string>("LastUUID");
-                    bool wasOffline = RegistryConfig.GetUserPreference("WasOffline", false);
-
-                    Logger.Info($"Auto-login data - Username: {lastUsername}, UUID: {(string.IsNullOrEmpty(lastUUID) ? "empty" : "present")}, WasOffline: {wasOffline}");
-
-                    if (!string.IsNullOrEmpty(lastUsername) && (wasOffline || !string.IsNullOrEmpty(lastUUID)))
-                    {
-                        try
-                        {
-                            MSession session = null;
-                            if (wasOffline)
-                            {
-                                Logger.Info("Attempting offline auto-login");
-                                session = MSession.CreateOfflineSession(lastUsername);
-                                
-                                // Update plugin manager with session and publish login event
-                                PluginManager.Instance.UpdateCurrentSession(session);
-                                PluginManager.Instance.GetEventManager().Publish(new UserLoginEvent
-                                {
-                                    Session = session,
-                                    Username = lastUsername,
-                                    IsOffline = true
-                                });
-                                
-                                Logger.Info("Offline auto-login successful, launching game");
-                                var gameLaunch = new GameLaunch(session);
-                                Application.Run(gameLaunch);
-                                return;
-                            }
-                            else
-                            {                
-                                Logger.Info("Attempting online auto-login");
-                                var loginHandler = JELoginHandlerBuilder.BuildDefault();
-                                var accounts = loginHandler.AccountManager.GetAccounts();
-                                Logger.Info($"Found {accounts.Count} saved accounts for auto-login");
-                                
-                                foreach (var account in accounts)
-                                {
-                                    try
-                                    {
-                                        Logger.Info($"Trying silent auth for account: {account.Identifier}");
-                                        // Use synchronous call to avoid handle issues
-                                        session = loginHandler.AuthenticateSilently(account).GetAwaiter().GetResult();
-                                        if (session != null && session.Username == lastUsername)
-                                        {
-                                            Logger.Info("Online auto-login successful, launching game");
-                                            // Update plugin manager with session and publish login event
-                                            PluginManager.Instance.UpdateCurrentSession(session);
-                                            PluginManager.Instance.GetEventManager().Publish(new UserLoginEvent
-                                            {
-                                                Session = session,
-                                                Username = lastUsername,
-                                                IsOffline = false
-                                            });
-                                            
-                                            var gameLaunch = new GameLaunch(session);
-                                            Application.Run(gameLaunch);
-                                            return;
-                                        }
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Logger.Warning($"Silent auth failed for account {account.Identifier}: {ex.Message}");
-                                        // Try next account
-                                        continue;
-                                    }
-                                }
-                                Logger.Warning("No matching account found for auto-login");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.Error($"Auto-login failed: {ex.Message}");
-                        }
-                    }
-                    else
-                    {
-                        Logger.Info("Auto-login conditions not met - either username is empty or (UUID is empty and not offline mode)");
-                    }
-                }
-                else
-                {
-                    Logger.Info("Auto-login is disabled");
-                }
-
-                // If auto-login failed or wasn't enabled, show login form
-                while (true)
-                {
-                    var loginForm = new FrmLogin();
-                    var result = loginForm.ShowDialog();
-                    
-                    if (result == DialogResult.OK)
-                    {
-                        // Get the session info from registry (saved by HandleSuccessfulLogin)
-                        string username = RegistryConfig.GetUserPreference<string>("LastUsername");
-                        string uuid = RegistryConfig.GetUserPreference<string>("LastUUID");
-                        bool wasOffline = RegistryConfig.GetUserPreference("WasOffline", false);
-                        
-                        if (!string.IsNullOrEmpty(username) && (wasOffline || !string.IsNullOrEmpty(uuid)))
-                        {
-                            MSession session;
-                            if (wasOffline)
-                            {
-                                session = MSession.CreateOfflineSession(username);
-                            }
-                            else
-                            {
-                                session = new MSession(username, uuid, "access_token"); // Create session with saved data
-                            }
-                            
-                            // Update plugin manager with session and publish login event
-                            PluginManager.Instance.UpdateCurrentSession(session);
-                            PluginManager.Instance.GetEventManager().Publish(new UserLoginEvent
-                            {
-                                Session = session,
-                                Username = username,
-                                IsOffline = wasOffline
-                            });
-                            
-                            var gameLaunch = new GameLaunch(session);
-                            Application.Run(gameLaunch);
-                            
-                            // After GameLaunch closes, check if we should restart (logout) or exit
-                            bool shouldRestart = RegistryConfig.GetUserPreference("RestartForLogout", false);
-                            if (shouldRestart)
-                            {
-                                RegistryConfig.SaveUserPreference("RestartForLogout", false); // Reset flag
-                                continue; // Show login form again
-                            }
-                            else
-                            {
-                                break; // Exit application
-                            }
-                        }
-                    }
-                    else
-                    {
-                        break; // User cancelled login, exit application
-                    }
-                }
+                HandleAutoLogin();
             }
             catch (Exception ex)
             {
@@ -227,6 +89,183 @@ namespace CloudLauncher
                 Alert.Error("An error occurred. Please check the logs for details.");
             }
         }
+
+        #endregion
+
+        #region Auto-Login Logic
+
+        private static void HandleAutoLogin()
+        {
+            bool keepLoggedIn = RegistryConfig.GetUserPreference("KeepLoggedIn", false);
+            Logger.Info($"Auto-login enabled: {keepLoggedIn}");
+            
+            if (keepLoggedIn)
+            {
+                string lastUsername = RegistryConfig.GetUserPreference<string>("LastUsername");
+                string lastUUID = RegistryConfig.GetUserPreference<string>("LastUUID");
+                bool wasOffline = RegistryConfig.GetUserPreference("WasOffline", false);
+
+                Logger.Info($"Auto-login data - Username: {lastUsername}, UUID: {(string.IsNullOrEmpty(lastUUID) ? "empty" : "present")}, WasOffline: {wasOffline}");
+
+                if (!string.IsNullOrEmpty(lastUsername) && (wasOffline || !string.IsNullOrEmpty(lastUUID)))
+                {
+                    if (TryAutoLogin(lastUsername, lastUUID, wasOffline))
+                    {
+                        return; // Auto-login successful, exit method
+                    }
+                }
+                else
+                {
+                    Logger.Info("Auto-login conditions not met - either username is empty or (UUID is empty and not offline mode)");
+                }
+            }
+            else
+            {
+                Logger.Info("Auto-login is disabled");
+            }
+
+            // If auto-login failed or wasn't enabled, show login form
+            HandleManualLogin();
+        }
+
+        private static bool TryAutoLogin(string lastUsername, string lastUUID, bool wasOffline)
+        {
+            try
+            {
+                MSession session = null;
+                if (wasOffline)
+                {
+                    Logger.Info("Attempting offline auto-login");
+                    session = MSession.CreateOfflineSession(lastUsername);
+                    
+                    // Update plugin manager with session and publish login event
+                    PluginManager.Instance.UpdateCurrentSession(session);
+                    PluginManager.Instance.GetEventManager().Publish(new UserLoginEvent
+                    {
+                        Session = session,
+                        Username = lastUsername,
+                        IsOffline = true
+                    });
+                    
+                    Logger.Info("Offline auto-login successful, launching game");
+                    var gameLaunch = new GameLaunch(session);
+                    Application.Run(gameLaunch);
+                    return true;
+                }
+                else
+                {                
+                    Logger.Info("Attempting online auto-login");
+                    var loginHandler = JELoginHandlerBuilder.BuildDefault();
+                    var accounts = loginHandler.AccountManager.GetAccounts();
+                    Logger.Info($"Found {accounts.Count} saved accounts for auto-login");
+                    
+                    foreach (var account in accounts)
+                    {
+                        try
+                        {
+                            Logger.Info($"Trying silent auth for account: {account.Identifier}");
+                            // Use synchronous call to avoid handle issues
+                            session = loginHandler.AuthenticateSilently(account).GetAwaiter().GetResult();
+                            if (session != null && session.Username == lastUsername)
+                            {
+                                Logger.Info("Online auto-login successful, launching game");
+                                // Update plugin manager with session and publish login event
+                                PluginManager.Instance.UpdateCurrentSession(session);
+                                PluginManager.Instance.GetEventManager().Publish(new UserLoginEvent
+                                {
+                                    Session = session,
+                                    Username = lastUsername,
+                                    IsOffline = false
+                                });
+                                
+                                var gameLaunch = new GameLaunch(session);
+                                Application.Run(gameLaunch);
+                                return true;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Warning($"Silent auth failed for account {account.Identifier}: {ex.Message}");
+                            // Try next account
+                            continue;
+                        }
+                    }
+                    Logger.Warning("No matching account found for auto-login");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Auto-login failed: {ex.Message}");
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region Manual Login Logic
+
+        private static void HandleManualLogin()
+        {
+            while (true)
+            {
+                var loginForm = new FrmLogin();
+                var result = loginForm.ShowDialog();
+                
+                if (result == DialogResult.OK)
+                {
+                    // Get the session info from registry (saved by HandleSuccessfulLogin)
+                    string username = RegistryConfig.GetUserPreference<string>("LastUsername");
+                    string uuid = RegistryConfig.GetUserPreference<string>("LastUUID");
+                    bool wasOffline = RegistryConfig.GetUserPreference("WasOffline", false);
+                    
+                    if (!string.IsNullOrEmpty(username) && (wasOffline || !string.IsNullOrEmpty(uuid)))
+                    {
+                        MSession session;
+                        if (wasOffline)
+                        {
+                            session = MSession.CreateOfflineSession(username);
+                        }
+                        else
+                        {
+                            session = new MSession(username, uuid, "access_token"); // Create session with saved data
+                        }
+                        
+                        // Update plugin manager with session and publish login event
+                        PluginManager.Instance.UpdateCurrentSession(session);
+                        PluginManager.Instance.GetEventManager().Publish(new UserLoginEvent
+                        {
+                            Session = session,
+                            Username = username,
+                            IsOffline = wasOffline
+                        });
+                        
+                        var gameLaunch = new GameLaunch(session);
+                        Application.Run(gameLaunch);
+                        
+                        // After GameLaunch closes, check if we should restart (logout) or exit
+                        bool shouldRestart = RegistryConfig.GetUserPreference("RestartForLogout", false);
+                        if (shouldRestart)
+                        {
+                            RegistryConfig.SaveUserPreference("RestartForLogout", false); // Reset flag
+                            continue; // Show login form again
+                        }
+                        else
+                        {
+                            break; // Exit application
+                        }
+                    }
+                }
+                else
+                {
+                    break; // User cancelled login, exit application
+                }
+            }
+        }
+
+        #endregion
+
+        #region Application Lifecycle Methods
 
         public static void stop()
         {
@@ -249,6 +288,10 @@ namespace CloudLauncher
             Logger.Info("Application restarting...");
             Application.Restart();
         }
+
+        #endregion
+
+        #region Helper Methods
 
         private static bool CheckMultipleInstances()
         {
@@ -305,6 +348,10 @@ namespace CloudLauncher
             }
         }
 
+        #endregion
+
+        #region Windows API Imports
+
         // Windows API functions for bringing window to front
         [System.Runtime.InteropServices.DllImport("user32.dll")]
         private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
@@ -313,5 +360,7 @@ namespace CloudLauncher
         private static extern bool SetForegroundWindow(IntPtr hWnd);
 
         private const int SW_RESTORE = 9;
+
+        #endregion
     }
 }

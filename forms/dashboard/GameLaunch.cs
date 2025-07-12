@@ -14,6 +14,8 @@ namespace CloudLauncher.forms.dashboard
 {
     public partial class GameLaunch : Form
     {
+        #region Fields and Properties
+
         private readonly MinecraftPath _minecraftPath;
         private readonly MinecraftLauncher _launcher;
         private string _currentJavaPath;
@@ -28,6 +30,10 @@ namespace CloudLauncher.forms.dashboard
         private NotifyIcon _trayIcon;
         private DiscordRpcClient _discordClient;
         private DateTime _gameStartTime;
+
+        #endregion
+
+        #region Custom Classes
 
         private class CustomVersionMetadata : IVersionMetadata
         {
@@ -52,6 +58,10 @@ namespace CloudLauncher.forms.dashboard
             }
         }
 
+        #endregion
+
+        #region Constructor and Initialization
+
         public GameLaunch(MSession session = null)
         {
             InitializeComponent();
@@ -70,7 +80,6 @@ namespace CloudLauncher.forms.dashboard
             // Enable owner drawing for the combo box
             dDVersions.DrawMode = DrawMode.OwnerDrawVariable;
             dDVersions.DropDownStyle = ComboBoxStyle.DropDownList;
-
 
             // add event handlers
             _launcher.FileProgressChanged += (sender, args) =>
@@ -120,13 +129,99 @@ namespace CloudLauncher.forms.dashboard
                 pbUserProfile.Image = Properties.Resources.error;
             }
 
-
             FetchChangeLogs(); // Fetch change logs asynchronously
 
             // Initialize Discord RPC
             InitializeDiscordRPC();
         }
 
+        private void InitializeNewSettings()
+        {
+            try
+            {
+                // Initialize startup position dropdown
+                ddStartupPosition.Items.Clear();
+                ddStartupPosition.Items.Add("Center Screen");
+                ddStartupPosition.Items.Add("Last Position");
+                ddStartupPosition.Items.Add("Top Left");
+                ddStartupPosition.Items.Add("Top Right");
+                ddStartupPosition.Items.Add("Bottom Left");
+                ddStartupPosition.Items.Add("Bottom Right");
+                ddStartupPosition.SelectedIndex = 0;
+
+                // Initialize log level dropdown
+                ddLogLevel.Items.Clear();
+                ddLogLevel.Items.Add("Error");
+                ddLogLevel.Items.Add("Warning");
+                ddLogLevel.Items.Add("Info");
+                ddLogLevel.Items.Add("Debug");
+                ddLogLevel.SelectedIndex = 2; // Default to Info
+
+                // Initialize system tray icon
+                InitializeTrayIcon();
+
+                // Initialize home page content
+                InitializeHomePage();
+
+                Logger.Info("New settings initialized successfully");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to initialize new settings: {ex.Message}");
+            }
+        }
+
+        private void InitializeHomePage()
+        {
+            try
+            {
+                // Load and display plugin information
+                RefreshPluginList();
+
+                Logger.Info("Home page initialized successfully");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to initialize home page: {ex.Message}");
+            }
+        }
+
+        private void InitializeTrayIcon()
+        {
+            try
+            {
+                _trayIcon = new NotifyIcon();
+                _trayIcon.Icon = this.Icon ?? SystemIcons.Application;
+                _trayIcon.Text = "CloudLauncher";
+                _trayIcon.Visible = false;
+
+                // Create context menu for tray icon
+                var contextMenu = new ContextMenuStrip();
+
+                var showItem = new ToolStripMenuItem("Show CloudLauncher");
+                showItem.Click += (s, e) => ShowFromTray();
+                contextMenu.Items.Add(showItem);
+
+                contextMenu.Items.Add(new ToolStripSeparator());
+
+                var exitItem = new ToolStripMenuItem("Exit");
+                exitItem.Click += (s, e) => ExitApplication();
+                contextMenu.Items.Add(exitItem);
+
+                _trayIcon.ContextMenuStrip = contextMenu;
+                _trayIcon.DoubleClick += (s, e) => ShowFromTray();
+
+                Logger.Info("System tray icon initialized");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to initialize tray icon: {ex.Message}");
+            }
+        }
+
+        #endregion
+
+        #region Changelog and Web Content
 
         private void FetchChangeLogs()
         {
@@ -194,25 +289,11 @@ namespace CloudLauncher.forms.dashboard
 
                 }
             };
-
         }
 
-        private void UpdateProgress(long current, long total, string status)
-        {
-            if (total > 0)
-            {
-                int percentage = (int)((current * 100) / total);
-                pbStatus.Value = percentage;
-                lblReady.Text = status;
-                pbStatus.Enabled = true;
-                lblReady.Enabled = true;
-            }
-            else
-            {
-                pbStatus.Enabled = false;
-                lblReady.Enabled = false;
-            }
-        }
+        #endregion
+
+        #region Version Management
 
         private void ScanInstalledVersions()
         {
@@ -324,6 +405,10 @@ namespace CloudLauncher.forms.dashboard
             RegistryConfig.SaveUserPreference("ShowBeta", _showBeta);
         }
 
+        #endregion
+
+        #region Settings Management
+
         private void LoadSettings()
         {
             Logger.Info("Loading user settings...");
@@ -391,94 +476,52 @@ namespace CloudLauncher.forms.dashboard
                 Alert.Error("Failed to load user settings. Please check the logs for details.");
             }
         }
-        private string FormatBytes(long bytes)
+
+        private void LoadNewSettings()
         {
-            string[] suffixes = { "B", "KB", "MB", "GB" };
-            int counter = 0;
-            decimal number = bytes;
-            while (Math.Round(number / 1024) >= 1)
+            try
             {
-                number = number / 1024;
-                counter++;
-            }
-            return $"{number:n1} {suffixes[counter]}";
-        }
+                // Load application settings
+                cbAllowMultipleInstances.Checked = RegistryConfig.GetUserPreference("AllowMultipleInstances", false);
+                cbStartMinimized.Checked = RegistryConfig.GetUserPreference("StartMinimized", false);
+                cbCloseToTray.Checked = RegistryConfig.GetUserPreference("CloseToTray", false);
+                cbAutoUpdate.Checked = RegistryConfig.GetUserPreference("AutoUpdate", true);
 
-        private bool ValidateNumericInputs(out string errorMessage)
-        {
-            errorMessage = string.Empty;
+                // Load Discord RPC settings
+                cbDiscordRPCEnabled.Checked = RegistryConfig.GetUserPreference("DiscordRPCEnabled", true);
+                cbDiscordShowDetails.Checked = RegistryConfig.GetUserPreference("DiscordShowDetails", true);
+                cbDiscordShowTime.Checked = RegistryConfig.GetUserPreference("DiscordShowTime", true);
+                txtDiscordApplicationId.Text = RegistryConfig.GetUserPreference<string>("DiscordApplicationId", "1393378653060202578");
+                txtDiscordCustomDetails.Text = RegistryConfig.GetUserPreference<string>("DiscordCustomDetails", "");
+                txtDiscordCustomState.Text = RegistryConfig.GetUserPreference<string>("DiscordCustomState", "");
 
-            // Validate screen width
-            if (!int.TryParse(txtGameScreenWidth.Text, out int width) || width <= 0)
-            {
-                errorMessage = "Please enter a valid screen width.";
-                return false;
-            }
-
-            // Validate screen height
-            if (!int.TryParse(txtGameScreenHeight.Text, out int height) || height <= 0)
-            {
-                errorMessage = "Please enter a valid screen height.";
-                return false;
-            }
-
-            // Validate server port
-            if (!string.IsNullOrEmpty(txtJoinServerPort.Text))
-            {
-                if (!int.TryParse(txtJoinServerPort.Text, out int port) || port <= 0 || port > 65535)
+                // Load startup position
+                string startupPosition = RegistryConfig.GetUserPreference<string>("StartupPosition", "Center Screen");
+                int positionIndex = ddStartupPosition.Items.IndexOf(startupPosition);
+                if (positionIndex != -1)
                 {
-                    errorMessage = "Please enter a valid server port (1-65535).";
-                    return false;
+                    ddStartupPosition.SelectedIndex = positionIndex;
                 }
+
+                // Load log level
+                string logLevel = RegistryConfig.GetUserPreference<string>("LogLevel", "Info");
+                int logIndex = ddLogLevel.Items.IndexOf(logLevel);
+                if (logIndex != -1)
+                {
+                    ddLogLevel.SelectedIndex = logIndex;
+                }
+
+                Logger.Info("New settings loaded successfully");
             }
-
-            return true;
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to load new settings: {ex.Message}");
+            }
         }
 
-        private void tBRam_ValueChanged(object sender, EventArgs e)
-        {
-            txtRam.Text = tBRam.Value.ToString();
-            RegistryConfig.SaveUserPreference("RAM", tBRam.Value);
-        }
+        #endregion
 
-        private void GameLaunch_Load(object sender, EventArgs e)
-        {
-            // Save settings when form is loaded (in case of any default values)
-            LoadSettings();
-
-            Pages.SetPage(PageHome);
-        }
-
-        private void txtCustomArgs_TextChanged(object sender, EventArgs e)
-        {
-            RegistryConfig.SaveUserPreference("CustomArgs", txtCustomArgs.Text);
-        }
-
-        // Add event handlers for other settings that should be saved automatically
-        private void txtGameScreenWidth_TextChanged(object sender, EventArgs e)
-        {
-            RegistryConfig.SaveUserPreference("ScreenWidth", int.Parse(txtGameScreenWidth.Text));
-        }
-
-        private void txtGameScreenHeight_TextChanged(object sender, EventArgs e)
-        {
-            RegistryConfig.SaveUserPreference("ScreenHeight", int.Parse(txtGameScreenHeight.Text));
-        }
-
-        private void cbFullScreen_CheckedChanged(object sender, EventArgs e)
-        {
-            RegistryConfig.SaveUserPreference("FullScreen", cbFullScreen.Checked);
-        }
-
-        private void txtJoinServerIP_TextChanged(object sender, EventArgs e)
-        {
-            RegistryConfig.SaveUserPreference("ServerIP", txtJoinServerIP.Text);
-        }
-
-        private void txtJoinServerPort_TextChanged(object sender, EventArgs e)
-        {
-            RegistryConfig.SaveUserPreference("ServerPort", txtJoinServerPort.Text);
-        }
+        #region Game Launch Logic
 
         private async void btnStartGame_Click(object sender, EventArgs e)
         {
@@ -551,7 +594,6 @@ namespace CloudLauncher.forms.dashboard
                     // Server connection if specified
                     ServerIp = txtJoinServerIP.Text.Trim(),
                     ServerPort = string.IsNullOrEmpty(txtJoinServerPort.Text) ? 25565 : int.Parse(txtJoinServerPort.Text),
-
 
                     // Launcher identification
                     VersionType = "CloudLauncher",
@@ -641,6 +683,35 @@ namespace CloudLauncher.forms.dashboard
             }
         }
 
+        private void UpdateLaunchStatistics()
+        {
+            try
+            {
+                // Increment launch count
+                int totalLaunches = RegistryConfig.GetUserPreference("TotalLaunches", 0) + 1;
+                RegistryConfig.SaveUserPreference("TotalLaunches", totalLaunches);
+
+                // Update last launch time
+                RegistryConfig.SaveUserPreference("LastLaunchTime", DateTime.Now.ToString());
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to update launch statistics: {ex.Message}");
+            }
+        }
+
+        #endregion
+
+        #region UI Event Handlers
+
+        private void GameLaunch_Load(object sender, EventArgs e)
+        {
+            // Save settings when form is loaded (in case of any default values)
+            LoadSettings();
+
+            Pages.SetPage(PageHome);
+        }
+
         private void btnLogout_Click(object sender, EventArgs e)
         {
             // Get current session info before clearing
@@ -681,6 +752,43 @@ namespace CloudLauncher.forms.dashboard
             }
         }
 
+        private void btnHome_Click(object sender, EventArgs e)
+        {
+            Pages.SetPage(PageHome);
+            // Refresh home page content when navigating to it
+            RefreshPluginList();
+        }
+
+        private void btnSettings2_Click(object sender, EventArgs e)
+        {
+            Pages.SetPage(PageSettings);
+        }
+
+        private void btnChangeLog_Click(object sender, EventArgs e)
+        {
+            Pages.SetPage(PageChangeLog);
+        }
+
+        private void btnLauncherPlugins_Click(object sender, EventArgs e)
+        {
+            Pages.SetPage(PagePlugins);
+        }
+
+        private void lblType_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        #endregion
+
+        #region Settings Event Handlers
+
+        private void tBRam_ValueChanged(object sender, EventArgs e)
+        {
+            txtRam.Text = tBRam.Value.ToString();
+            RegistryConfig.SaveUserPreference("RAM", tBRam.Value);
+        }
+
         private void txtRam_Leave(object sender, EventArgs e)
         {
             if (int.TryParse(txtRam.Text, out int ram) && ram > 0)
@@ -695,254 +803,34 @@ namespace CloudLauncher.forms.dashboard
             }
         }
 
-        private void btnHome_Click(object sender, EventArgs e)
+        private void txtCustomArgs_TextChanged(object sender, EventArgs e)
         {
-            Pages.SetPage(PageHome);
-            // Refresh home page content when navigating to it
-            RefreshPluginList();
+            RegistryConfig.SaveUserPreference("CustomArgs", txtCustomArgs.Text);
         }
 
-        private async Task LoadUserAvatarAsync(string username)
+        private void txtGameScreenWidth_TextChanged(object sender, EventArgs e)
         {
-            try
-            {
-                string avatarUrl = $"https://mc-heads.net/avatar/{username}";
-
-                using (var httpClient = new HttpClient())
-                {
-                    httpClient.Timeout = TimeSpan.FromSeconds(10);
-                    byte[] imageBytes = await httpClient.GetByteArrayAsync(avatarUrl);
-
-                    using (var stream = new MemoryStream(imageBytes))
-                    {
-                        var image = Image.FromStream(stream);
-
-                        // Ensure we're on the UI thread when setting the image
-                        if (pbUserProfile.InvokeRequired)
-                        {
-                            pbUserProfile.Invoke(new Action(() => pbUserProfile.Image = image));
-                        }
-                        else
-                        {
-                            pbUserProfile.Image = image;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                // Log the error for debugging
-                Logger.Warning($"Failed to load avatar for user '{username}': {ex.Message}");
-
-                // Set default error image on UI thread
-                if (pbUserProfile.InvokeRequired)
-                {
-                    pbUserProfile.Invoke(new Action(() => pbUserProfile.Image = Properties.Resources.error));
-                }
-                else
-                {
-                    pbUserProfile.Image = Properties.Resources.error;
-                }
-            }
+            RegistryConfig.SaveUserPreference("ScreenWidth", int.Parse(txtGameScreenWidth.Text));
         }
 
-        private void lblType_Click(object sender, EventArgs e)
+        private void txtGameScreenHeight_TextChanged(object sender, EventArgs e)
         {
-
+            RegistryConfig.SaveUserPreference("ScreenHeight", int.Parse(txtGameScreenHeight.Text));
         }
 
-        private void btnSettings2_Click(object sender, EventArgs e)
+        private void cbFullScreen_CheckedChanged(object sender, EventArgs e)
         {
-            Pages.SetPage(PageSettings);
+            RegistryConfig.SaveUserPreference("FullScreen", cbFullScreen.Checked);
         }
 
-        private void btnChangeLog_Click(object sender, EventArgs e)
+        private void txtJoinServerIP_TextChanged(object sender, EventArgs e)
         {
-            Pages.SetPage(PageChangeLog);
+            RegistryConfig.SaveUserPreference("ServerIP", txtJoinServerIP.Text);
         }
 
-        private void InitializeNewSettings()
+        private void txtJoinServerPort_TextChanged(object sender, EventArgs e)
         {
-            try
-            {
-                // Initialize startup position dropdown
-                ddStartupPosition.Items.Clear();
-                ddStartupPosition.Items.Add("Center Screen");
-                ddStartupPosition.Items.Add("Last Position");
-                ddStartupPosition.Items.Add("Top Left");
-                ddStartupPosition.Items.Add("Top Right");
-                ddStartupPosition.Items.Add("Bottom Left");
-                ddStartupPosition.Items.Add("Bottom Right");
-                ddStartupPosition.SelectedIndex = 0;
-
-                // Initialize log level dropdown
-                ddLogLevel.Items.Clear();
-                ddLogLevel.Items.Add("Error");
-                ddLogLevel.Items.Add("Warning");
-                ddLogLevel.Items.Add("Info");
-                ddLogLevel.Items.Add("Debug");
-                ddLogLevel.SelectedIndex = 2; // Default to Info
-
-                // Initialize system tray icon
-                InitializeTrayIcon();
-
-                // Initialize home page content
-                InitializeHomePage();
-
-                Logger.Info("New settings initialized successfully");
-            }
-            catch (Exception ex)
-            {
-                Logger.Error($"Failed to initialize new settings: {ex.Message}");
-            }
-        }
-
-        private void InitializeHomePage()
-        {
-            try
-            {
-                // Load and display plugin information
-                RefreshPluginList();
-
-                Logger.Info("Home page initialized successfully");
-            }
-            catch (Exception ex)
-            {
-                Logger.Error($"Failed to initialize home page: {ex.Message}");
-            }
-        }
-
-        private void RefreshPluginList()
-        {
-            try
-            {
-                lstPlugins.Items.Clear();
-
-                var pluginManager = PluginManager.Instance;
-                var plugins = pluginManager.GetAllPlugins();
-
-                if (plugins.Count == 0)
-                {
-                    lstPlugins.Items.Add("No plugins installed");
-                    lblPluginStatus.Text = "No plugins found. Install plugins to extend functionality.";
-                }
-                else
-                {
-                    foreach (var plugin in plugins)
-                    {
-                        var status = pluginManager.IsPluginEnabled(plugin.PluginId) ? "Enabled" : "Disabled";
-                        lstPlugins.Items.Add($"{plugin.Name} v{plugin.Version} - {status}");
-                    }
-
-                    int enabledCount = plugins.Count(p => pluginManager.IsPluginEnabled(p.PluginId));
-                    lblPluginStatus.Text = $"{plugins.Count} plugins installed, {enabledCount} enabled";
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Logger.Error($"Failed to refresh plugin list: {ex.Message}");
-                lblPluginStatus.Text = "Error loading plugins";
-            }
-        }
-
-        private void UpdateLaunchStatistics()
-        {
-            try
-            {
-                // Increment launch count
-                int totalLaunches = RegistryConfig.GetUserPreference("TotalLaunches", 0) + 1;
-                RegistryConfig.SaveUserPreference("TotalLaunches", totalLaunches);
-
-                // Update last launch time
-                RegistryConfig.SaveUserPreference("LastLaunchTime", DateTime.Now.ToString());
-            }
-            catch (Exception ex)
-            {
-                Logger.Error($"Failed to update launch statistics: {ex.Message}");
-            }
-        }
-
-        private void btnRefreshPlugins_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                // Reload plugins
-                PluginManager.Instance.LoadAllPlugins();
-
-                // Update the display
-                RefreshPluginList();
-
-                Alert.Info("Plugins refreshed successfully!");
-            }
-            catch (Exception ex)
-            {
-                Logger.Error($"Failed to refresh plugins: {ex.Message}");
-                Alert.Error("Failed to refresh plugins. Check the logs for details.");
-            }
-        }
-
-        private void btnOpenPluginFolder_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                string pluginPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                                               ".cloudlauncher", "plugins");
-
-                if (!Directory.Exists(pluginPath))
-                {
-                    Directory.CreateDirectory(pluginPath);
-                }
-
-                System.Diagnostics.Process.Start("explorer.exe", pluginPath);
-            }
-            catch (Exception ex)
-            {
-                Logger.Error($"Failed to open plugin folder: {ex.Message}");
-                Alert.Error("Failed to open plugin folder. Check the logs for details.");
-            }
-        }
-
-        private void LoadNewSettings()
-        {
-            try
-            {
-                // Load application settings
-                cbAllowMultipleInstances.Checked = RegistryConfig.GetUserPreference("AllowMultipleInstances", false);
-                cbStartMinimized.Checked = RegistryConfig.GetUserPreference("StartMinimized", false);
-                cbCloseToTray.Checked = RegistryConfig.GetUserPreference("CloseToTray", false);
-                cbAutoUpdate.Checked = RegistryConfig.GetUserPreference("AutoUpdate", true);
-
-                // Load Discord RPC settings
-                cbDiscordRPCEnabled.Checked = RegistryConfig.GetUserPreference("DiscordRPCEnabled", true);
-                cbDiscordShowDetails.Checked = RegistryConfig.GetUserPreference("DiscordShowDetails", true);
-                cbDiscordShowTime.Checked = RegistryConfig.GetUserPreference("DiscordShowTime", true);
-                txtDiscordApplicationId.Text = RegistryConfig.GetUserPreference<string>("DiscordApplicationId", "1393378653060202578");
-                txtDiscordCustomDetails.Text = RegistryConfig.GetUserPreference<string>("DiscordCustomDetails", "");
-                txtDiscordCustomState.Text = RegistryConfig.GetUserPreference<string>("DiscordCustomState", "");
-
-                // Load startup position
-                string startupPosition = RegistryConfig.GetUserPreference<string>("StartupPosition", "Center Screen");
-                int positionIndex = ddStartupPosition.Items.IndexOf(startupPosition);
-                if (positionIndex != -1)
-                {
-                    ddStartupPosition.SelectedIndex = positionIndex;
-                }
-
-                // Load log level
-                string logLevel = RegistryConfig.GetUserPreference<string>("LogLevel", "Info");
-                int logIndex = ddLogLevel.Items.IndexOf(logLevel);
-                if (logIndex != -1)
-                {
-                    ddLogLevel.SelectedIndex = logIndex;
-                }
-
-                Logger.Info("New settings loaded successfully");
-            }
-            catch (Exception ex)
-            {
-                Logger.Error($"Failed to load new settings: {ex.Message}");
-            }
+            RegistryConfig.SaveUserPreference("ServerPort", txtJoinServerPort.Text);
         }
 
         private void cbAllowMultipleInstances_CheckedChanged(object sender, EventArgs e)
@@ -1065,6 +953,239 @@ namespace CloudLauncher.forms.dashboard
             }
         }
 
+        #endregion
+
+        #region Plugin Management
+
+        private void RefreshPluginList()
+        {
+            try
+            {
+                lstPlugins.Items.Clear();
+
+                var pluginManager = PluginManager.Instance;
+                var plugins = pluginManager.GetAllPlugins();
+
+                if (plugins.Count == 0)
+                {
+                    lstPlugins.Items.Add("No plugins installed");
+                    lblPluginStatus.Text = "No plugins found. Install plugins to extend functionality.";
+                }
+                else
+                {
+                    foreach (var plugin in plugins)
+                    {
+                        var status = pluginManager.IsPluginEnabled(plugin.PluginId) ? "Enabled" : "Disabled";
+                        lstPlugins.Items.Add($"{plugin.Name} v{plugin.Version} - {status}");
+                    }
+
+                    int enabledCount = plugins.Count(p => pluginManager.IsPluginEnabled(p.PluginId));
+                    lblPluginStatus.Text = $"{plugins.Count} plugins installed, {enabledCount} enabled";
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to refresh plugin list: {ex.Message}");
+                lblPluginStatus.Text = "Error loading plugins";
+            }
+        }
+
+        private void btnRefreshPlugins_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // Reload plugins
+                PluginManager.Instance.LoadAllPlugins();
+
+                // Update the display
+                RefreshPluginList();
+
+                Alert.Info("Plugins refreshed successfully!");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to refresh plugins: {ex.Message}");
+                Alert.Error("Failed to refresh plugins. Check the logs for details.");
+            }
+        }
+
+        private void btnOpenPluginFolder_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string pluginPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                                               ".cloudlauncher", "plugins");
+
+                if (!Directory.Exists(pluginPath))
+                {
+                    Directory.CreateDirectory(pluginPath);
+                }
+
+                System.Diagnostics.Process.Start("explorer.exe", pluginPath);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to open plugin folder: {ex.Message}");
+                Alert.Error("Failed to open plugin folder. Check the logs for details.");
+            }
+        }
+
+        #endregion
+
+        #region Form Event Handlers
+
+        private void GameLaunch_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Handle close to tray
+            if (cbCloseToTray?.Checked == true && e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true;
+                this.WindowState = FormWindowState.Minimized;
+                this.ShowInTaskbar = false;
+                _trayIcon.Visible = true;
+                _trayIcon.ShowBalloonTip(2000, "CloudLauncher", "Application minimized to tray", ToolTipIcon.Info);
+                Logger.Info("Application minimized to system tray");
+            }
+            else
+            {
+                // Dispose Discord RPC client
+                _discordClient?.Dispose();
+                _trayIcon?.Dispose();
+            }
+        }
+
+        protected override void SetVisibleCore(bool value)
+        {
+            // Handle start minimized setting
+            if (cbStartMinimized?.Checked == true && !IsHandleCreated)
+            {
+                this.WindowState = FormWindowState.Minimized;
+                this.ShowInTaskbar = false;
+            }
+            base.SetVisibleCore(value);
+        }
+
+        protected override void OnLocationChanged(EventArgs e)
+        {
+            base.OnLocationChanged(e);
+            // Save window position for "Last Position" setting
+            if (this.WindowState == FormWindowState.Normal && ddStartupPosition?.SelectedItem?.ToString() == "Last Position")
+            {
+                RegistryConfig.SaveUserPreference("WindowX", this.Location.X);
+                RegistryConfig.SaveUserPreference("WindowY", this.Location.Y);
+            }
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        private void UpdateProgress(long current, long total, string status)
+        {
+            if (total > 0)
+            {
+                int percentage = (int)((current * 100) / total);
+                pbStatus.Value = percentage;
+                lblReady.Text = status;
+                pbStatus.Enabled = true;
+                lblReady.Enabled = true;
+            }
+            else
+            {
+                pbStatus.Enabled = false;
+                lblReady.Enabled = false;
+            }
+        }
+
+        private string FormatBytes(long bytes)
+        {
+            string[] suffixes = { "B", "KB", "MB", "GB" };
+            int counter = 0;
+            decimal number = bytes;
+            while (Math.Round(number / 1024) >= 1)
+            {
+                number = number / 1024;
+                counter++;
+            }
+            return $"{number:n1} {suffixes[counter]}";
+        }
+
+        private bool ValidateNumericInputs(out string errorMessage)
+        {
+            errorMessage = string.Empty;
+
+            // Validate screen width
+            if (!int.TryParse(txtGameScreenWidth.Text, out int width) || width <= 0)
+            {
+                errorMessage = "Please enter a valid screen width.";
+                return false;
+            }
+
+            // Validate screen height
+            if (!int.TryParse(txtGameScreenHeight.Text, out int height) || height <= 0)
+            {
+                errorMessage = "Please enter a valid screen height.";
+                return false;
+            }
+
+            // Validate server port
+            if (!string.IsNullOrEmpty(txtJoinServerPort.Text))
+            {
+                if (!int.TryParse(txtJoinServerPort.Text, out int port) || port <= 0 || port > 65535)
+                {
+                    errorMessage = "Please enter a valid server port (1-65535).";
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private async Task LoadUserAvatarAsync(string username)
+        {
+            try
+            {
+                string avatarUrl = $"https://mc-heads.net/avatar/{username}";
+
+                using (var httpClient = new HttpClient())
+                {
+                    httpClient.Timeout = TimeSpan.FromSeconds(10);
+                    byte[] imageBytes = await httpClient.GetByteArrayAsync(avatarUrl);
+
+                    using (var stream = new MemoryStream(imageBytes))
+                    {
+                        var image = Image.FromStream(stream);
+
+                        // Ensure we're on the UI thread when setting the image
+                        if (pbUserProfile.InvokeRequired)
+                        {
+                            pbUserProfile.Invoke(new Action(() => pbUserProfile.Image = image));
+                        }
+                        else
+                        {
+                            pbUserProfile.Image = image;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the error for debugging
+                Logger.Warning($"Failed to load avatar for user '{username}': {ex.Message}");
+
+                // Set default error image on UI thread
+                if (pbUserProfile.InvokeRequired)
+                {
+                    pbUserProfile.Invoke(new Action(() => pbUserProfile.Image = Properties.Resources.error));
+                }
+                else
+                {
+                    pbUserProfile.Image = Properties.Resources.error;
+                }
+            }
+        }
+
         private void ApplyStartupPosition(string position)
         {
             try
@@ -1108,61 +1229,6 @@ namespace CloudLauncher.forms.dashboard
             }
         }
 
-        protected override void SetVisibleCore(bool value)
-        {
-            // Handle start minimized setting
-            if (cbStartMinimized?.Checked == true && !IsHandleCreated)
-            {
-                this.WindowState = FormWindowState.Minimized;
-                this.ShowInTaskbar = false;
-            }
-            base.SetVisibleCore(value);
-        }
-
-        protected override void OnLocationChanged(EventArgs e)
-        {
-            base.OnLocationChanged(e);
-            // Save window position for "Last Position" setting
-            if (this.WindowState == FormWindowState.Normal && ddStartupPosition?.SelectedItem?.ToString() == "Last Position")
-            {
-                RegistryConfig.SaveUserPreference("WindowX", this.Location.X);
-                RegistryConfig.SaveUserPreference("WindowY", this.Location.Y);
-            }
-        }
-
-        private void InitializeTrayIcon()
-        {
-            try
-            {
-                _trayIcon = new NotifyIcon();
-                _trayIcon.Icon = this.Icon ?? SystemIcons.Application;
-                _trayIcon.Text = "CloudLauncher";
-                _trayIcon.Visible = false;
-
-                // Create context menu for tray icon
-                var contextMenu = new ContextMenuStrip();
-
-                var showItem = new ToolStripMenuItem("Show CloudLauncher");
-                showItem.Click += (s, e) => ShowFromTray();
-                contextMenu.Items.Add(showItem);
-
-                contextMenu.Items.Add(new ToolStripSeparator());
-
-                var exitItem = new ToolStripMenuItem("Exit");
-                exitItem.Click += (s, e) => ExitApplication();
-                contextMenu.Items.Add(exitItem);
-
-                _trayIcon.ContextMenuStrip = contextMenu;
-                _trayIcon.DoubleClick += (s, e) => ShowFromTray();
-
-                Logger.Info("System tray icon initialized");
-            }
-            catch (Exception ex)
-            {
-                Logger.Error($"Failed to initialize tray icon: {ex.Message}");
-            }
-        }
-
         private void ShowFromTray()
         {
             this.Show();
@@ -1181,30 +1247,7 @@ namespace CloudLauncher.forms.dashboard
             Application.Exit();
         }
 
-        private void btnLauncherPlugins_Click(object sender, EventArgs e)
-        {
-            Pages.SetPage(PagePlugins);
-        }
-
-        private void GameLaunch_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            // Handle close to tray
-            if (cbCloseToTray?.Checked == true && e.CloseReason == CloseReason.UserClosing)
-            {
-                e.Cancel = true;
-                this.WindowState = FormWindowState.Minimized;
-                this.ShowInTaskbar = false;
-                _trayIcon.Visible = true;
-                _trayIcon.ShowBalloonTip(2000, "CloudLauncher", "Application minimized to tray", ToolTipIcon.Info);
-                Logger.Info("Application minimized to system tray");
-            }
-            else
-            {
-                // Dispose Discord RPC client
-                _discordClient?.Dispose();
-                _trayIcon?.Dispose();
-            }
-        }
+        #endregion
 
         #region Discord RPC Methods
 
