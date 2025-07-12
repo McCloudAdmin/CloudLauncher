@@ -10,6 +10,9 @@ using CloudLauncher.plugins;
 using CloudLauncher.plugins.Events;
 using CmlLib.Core.Auth;
 using CmlLib.Core.Auth.Microsoft;
+using DiscordRPC.Logging;
+using DiscordRPC.Events;
+using DiscordRPC;
 
 namespace CloudLauncher
 {

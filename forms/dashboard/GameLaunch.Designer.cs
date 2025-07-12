@@ -49,6 +49,10 @@
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges27 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges30 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges29 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges34 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges31 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges32 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges33 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Utilities.BunifuPages.BunifuAnimatorNS.Animation animation1 = new Utilities.BunifuPages.BunifuAnimatorNS.Animation();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges12 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges13 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
@@ -60,16 +64,15 @@
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges20 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges24 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges26 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges31 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GameLaunch));
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges32 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges33 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges34 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges35 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GameLaunch));
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges36 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges37 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges38 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges39 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges40 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges41 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges42 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             tBRam = new CloudLauncher.components.TrackBar(components);
             dDVersions = new CloudLauncher.components.DropDown(components);
             btnStartGame = new CloudLauncher.components.Button(components);
@@ -101,6 +104,16 @@
             cbCloseToTray = new CloudLauncher.components.CheckBox(components);
             cbAutoUpdate = new CloudLauncher.components.CheckBox(components);
             ddLogLevel = new CloudLauncher.components.DropDown(components);
+            boxDiscord = new CloudLauncher.components.GroupBox(components);
+            cbDiscordRPCEnabled = new CloudLauncher.components.CheckBox(components);
+            cbDiscordShowDetails = new CloudLauncher.components.CheckBox(components);
+            cbDiscordShowTime = new CloudLauncher.components.CheckBox(components);
+            lblDiscordAppId = new CloudLauncher.components.Label(components);
+            txtDiscordApplicationId = new CloudLauncher.components.TextBox(components);
+            lblDiscordDetails = new CloudLauncher.components.Label(components);
+            txtDiscordCustomDetails = new CloudLauncher.components.TextBox(components);
+            lblDiscordState = new CloudLauncher.components.Label(components);
+            txtDiscordCustomState = new CloudLauncher.components.TextBox(components);
             Pages = new Bunifu.UI.WinForms.BunifuPages();
             PagePlugins = new TabPage();
             pnlPlugins = new Panel();
@@ -139,6 +152,7 @@
             guna2Elipse1 = new Guna.UI2.WinForms.Guna2Elipse(components);
             boxApp.SuspendLayout();
             boxBehavior.SuspendLayout();
+            boxDiscord.SuspendLayout();
             Pages.SuspendLayout();
             PagePlugins.SuspendLayout();
             pnlPlugins.SuspendLayout();
@@ -744,10 +758,10 @@
             boxBehavior.FillColor = Color.FromArgb(10, 10, 10);
             boxBehavior.Font = new Font("Trebuchet MS", 11F, FontStyle.Bold);
             boxBehavior.ForeColor = Color.White;
-            boxBehavior.Location = new Point(475, 333);
+            boxBehavior.Location = new Point(468, 333);
             boxBehavior.Name = "boxBehavior";
             boxBehavior.ShadowDecoration.CustomizableEdges = customizableEdges30;
-            boxBehavior.Size = new Size(366, 120);
+            boxBehavior.Size = new Size(360, 120);
             boxBehavior.TabIndex = 4;
             boxBehavior.Text = "Application Behavior";
             boxBehavior.UseTransparentBackground = true;
@@ -839,6 +853,228 @@
             ddLogLevel.TabStop = false;
             ddLogLevel.SelectedIndexChanged += ddLogLevel_SelectedIndexChanged;
             // 
+            // boxDiscord
+            // 
+            boxDiscord.BackColor = Color.Transparent;
+            boxDiscord.BorderColor = Color.Transparent;
+            boxDiscord.BorderRadius = 6;
+            boxDiscord.Controls.Add(cbDiscordRPCEnabled);
+            boxDiscord.Controls.Add(cbDiscordShowDetails);
+            boxDiscord.Controls.Add(cbDiscordShowTime);
+            boxDiscord.Controls.Add(lblDiscordAppId);
+            boxDiscord.Controls.Add(txtDiscordApplicationId);
+            boxDiscord.Controls.Add(lblDiscordDetails);
+            boxDiscord.Controls.Add(txtDiscordCustomDetails);
+            boxDiscord.Controls.Add(lblDiscordState);
+            boxDiscord.Controls.Add(txtDiscordCustomState);
+            boxDiscord.CustomBorderColor = Color.FromArgb(231, 80, 34);
+            boxDiscord.CustomizableEdges = customizableEdges34;
+            boxDiscord.FillColor = Color.FromArgb(10, 10, 10);
+            boxDiscord.Font = new Font("Trebuchet MS", 11F, FontStyle.Bold);
+            boxDiscord.ForeColor = Color.White;
+            boxDiscord.Location = new Point(6, 459);
+            boxDiscord.Name = "boxDiscord";
+            boxDiscord.ShadowDecoration.CustomizableEdges = customizableEdges34;
+            boxDiscord.Size = new Size(823, 160);
+            boxDiscord.TabIndex = 5;
+            boxDiscord.Text = "Discord Rich Presence";
+            boxDiscord.UseTransparentBackground = true;
+            // 
+            // cbDiscordRPCEnabled
+            // 
+            cbDiscordRPCEnabled.Animated = true;
+            cbDiscordRPCEnabled.AutoSize = true;
+            cbDiscordRPCEnabled.BackColor = Color.Transparent;
+            cbDiscordRPCEnabled.CheckedState.BorderColor = Color.FromArgb(231, 80, 34);
+            cbDiscordRPCEnabled.CheckedState.BorderRadius = 0;
+            cbDiscordRPCEnabled.CheckedState.BorderThickness = 0;
+            cbDiscordRPCEnabled.CheckedState.FillColor = Color.FromArgb(231, 80, 34);
+            cbDiscordRPCEnabled.Font = new Font("Trebuchet MS", 9F, FontStyle.Bold);
+            cbDiscordRPCEnabled.ForeColor = Color.White;
+            cbDiscordRPCEnabled.Location = new Point(18, 52);
+            cbDiscordRPCEnabled.Name = "cbDiscordRPCEnabled";
+            cbDiscordRPCEnabled.Size = new Size(136, 22);
+            cbDiscordRPCEnabled.TabIndex = 0;
+            cbDiscordRPCEnabled.Text = "Enable Discord RPC";
+            cbDiscordRPCEnabled.UncheckedState.BorderColor = Color.FromArgb(38, 38, 38);
+            cbDiscordRPCEnabled.UncheckedState.BorderRadius = 0;
+            cbDiscordRPCEnabled.UncheckedState.BorderThickness = 0;
+            cbDiscordRPCEnabled.UncheckedState.FillColor = Color.FromArgb(38, 38, 38);
+            cbDiscordRPCEnabled.UseVisualStyleBackColor = false;
+            cbDiscordRPCEnabled.CheckedChanged += cbDiscordRPCEnabled_CheckedChanged;
+            // 
+            // cbDiscordShowDetails
+            // 
+            cbDiscordShowDetails.Animated = true;
+            cbDiscordShowDetails.AutoSize = true;
+            cbDiscordShowDetails.BackColor = Color.Transparent;
+            cbDiscordShowDetails.CheckedState.BorderColor = Color.FromArgb(231, 80, 34);
+            cbDiscordShowDetails.CheckedState.BorderRadius = 0;
+            cbDiscordShowDetails.CheckedState.BorderThickness = 0;
+            cbDiscordShowDetails.CheckedState.FillColor = Color.FromArgb(231, 80, 34);
+            cbDiscordShowDetails.Font = new Font("Trebuchet MS", 9F, FontStyle.Bold);
+            cbDiscordShowDetails.ForeColor = Color.White;
+            cbDiscordShowDetails.Location = new Point(18, 80);
+            cbDiscordShowDetails.Name = "cbDiscordShowDetails";
+            cbDiscordShowDetails.Size = new Size(100, 22);
+            cbDiscordShowDetails.TabIndex = 1;
+            cbDiscordShowDetails.Text = "Show Details";
+            cbDiscordShowDetails.UncheckedState.BorderColor = Color.FromArgb(38, 38, 38);
+            cbDiscordShowDetails.UncheckedState.BorderRadius = 0;
+            cbDiscordShowDetails.UncheckedState.BorderThickness = 0;
+            cbDiscordShowDetails.UncheckedState.FillColor = Color.FromArgb(38, 38, 38);
+            cbDiscordShowDetails.UseVisualStyleBackColor = false;
+            cbDiscordShowDetails.CheckedChanged += cbDiscordShowDetails_CheckedChanged;
+            // 
+            // cbDiscordShowTime
+            // 
+            cbDiscordShowTime.Animated = true;
+            cbDiscordShowTime.AutoSize = true;
+            cbDiscordShowTime.BackColor = Color.Transparent;
+            cbDiscordShowTime.CheckedState.BorderColor = Color.FromArgb(231, 80, 34);
+            cbDiscordShowTime.CheckedState.BorderRadius = 0;
+            cbDiscordShowTime.CheckedState.BorderThickness = 0;
+            cbDiscordShowTime.CheckedState.FillColor = Color.FromArgb(231, 80, 34);
+            cbDiscordShowTime.Font = new Font("Trebuchet MS", 9F, FontStyle.Bold);
+            cbDiscordShowTime.ForeColor = Color.White;
+            cbDiscordShowTime.Location = new Point(18, 108);
+            cbDiscordShowTime.Name = "cbDiscordShowTime";
+            cbDiscordShowTime.Size = new Size(89, 22);
+            cbDiscordShowTime.TabIndex = 2;
+            cbDiscordShowTime.Text = "Show Time";
+            cbDiscordShowTime.UncheckedState.BorderColor = Color.FromArgb(38, 38, 38);
+            cbDiscordShowTime.UncheckedState.BorderRadius = 0;
+            cbDiscordShowTime.UncheckedState.BorderThickness = 0;
+            cbDiscordShowTime.UncheckedState.FillColor = Color.FromArgb(38, 38, 38);
+            cbDiscordShowTime.UseVisualStyleBackColor = false;
+            cbDiscordShowTime.CheckedChanged += cbDiscordShowTime_CheckedChanged;
+            // 
+            // lblDiscordAppId
+            // 
+            lblDiscordAppId.AutoSize = false;
+            lblDiscordAppId.BackColor = Color.Transparent;
+            lblDiscordAppId.Font = new Font("Trebuchet MS", 9F, FontStyle.Bold);
+            lblDiscordAppId.ForeColor = Color.White;
+            lblDiscordAppId.IsContextMenuEnabled = false;
+            lblDiscordAppId.IsSelectionEnabled = false;
+            lblDiscordAppId.Location = new Point(200, 52);
+            lblDiscordAppId.Name = "lblDiscordAppId";
+            lblDiscordAppId.Size = new Size(100, 22);
+            lblDiscordAppId.TabIndex = 3;
+            lblDiscordAppId.Text = "Application ID:";
+            lblDiscordAppId.TextAlignment = ContentAlignment.MiddleLeft;
+            // 
+            // txtDiscordApplicationId
+            // 
+            txtDiscordApplicationId.Animated = true;
+            txtDiscordApplicationId.BackColor = Color.Transparent;
+            txtDiscordApplicationId.BorderColor = Color.Transparent;
+            txtDiscordApplicationId.BorderRadius = 6;
+            txtDiscordApplicationId.CustomizableEdges = customizableEdges31;
+            txtDiscordApplicationId.DefaultText = "";
+            txtDiscordApplicationId.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
+            txtDiscordApplicationId.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
+            txtDiscordApplicationId.DisabledState.ForeColor = Color.FromArgb(138, 138, 138);
+            txtDiscordApplicationId.DisabledState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
+            txtDiscordApplicationId.FillColor = Color.FromArgb(25, 25, 25);
+            txtDiscordApplicationId.FocusedState.BorderColor = Color.FromArgb(255, 87, 34);
+            txtDiscordApplicationId.Font = new Font("Trebuchet MS", 9F);
+            txtDiscordApplicationId.ForeColor = Color.White;
+            txtDiscordApplicationId.HoverState.BorderColor = Color.FromArgb(255, 87, 34);
+            txtDiscordApplicationId.Location = new Point(306, 52);
+            txtDiscordApplicationId.Name = "txtDiscordApplicationId";
+            txtDiscordApplicationId.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
+            txtDiscordApplicationId.PlaceholderText = "1393378653060202578";
+            txtDiscordApplicationId.SelectedText = "";
+            txtDiscordApplicationId.ShadowDecoration.CustomizableEdges = customizableEdges31;
+            txtDiscordApplicationId.Size = new Size(200, 22);
+            txtDiscordApplicationId.TabIndex = 4;
+            txtDiscordApplicationId.TextChanged += txtDiscordApplicationId_TextChanged;
+            // 
+            // lblDiscordDetails
+            // 
+            lblDiscordDetails.AutoSize = false;
+            lblDiscordDetails.BackColor = Color.Transparent;
+            lblDiscordDetails.Font = new Font("Trebuchet MS", 9F, FontStyle.Bold);
+            lblDiscordDetails.ForeColor = Color.White;
+            lblDiscordDetails.IsContextMenuEnabled = false;
+            lblDiscordDetails.IsSelectionEnabled = false;
+            lblDiscordDetails.Location = new Point(200, 80);
+            lblDiscordDetails.Name = "lblDiscordDetails";
+            lblDiscordDetails.Size = new Size(100, 22);
+            lblDiscordDetails.TabIndex = 5;
+            lblDiscordDetails.Text = "Custom Details:";
+            lblDiscordDetails.TextAlignment = ContentAlignment.MiddleLeft;
+            // 
+            // txtDiscordCustomDetails
+            // 
+            txtDiscordCustomDetails.Animated = true;
+            txtDiscordCustomDetails.BackColor = Color.Transparent;
+            txtDiscordCustomDetails.BorderColor = Color.Transparent;
+            txtDiscordCustomDetails.BorderRadius = 6;
+            txtDiscordCustomDetails.CustomizableEdges = customizableEdges32;
+            txtDiscordCustomDetails.DefaultText = "";
+            txtDiscordCustomDetails.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
+            txtDiscordCustomDetails.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
+            txtDiscordCustomDetails.DisabledState.ForeColor = Color.FromArgb(138, 138, 138);
+            txtDiscordCustomDetails.DisabledState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
+            txtDiscordCustomDetails.FillColor = Color.FromArgb(25, 25, 25);
+            txtDiscordCustomDetails.FocusedState.BorderColor = Color.FromArgb(255, 87, 34);
+            txtDiscordCustomDetails.Font = new Font("Trebuchet MS", 9F);
+            txtDiscordCustomDetails.ForeColor = Color.White;
+            txtDiscordCustomDetails.HoverState.BorderColor = Color.FromArgb(255, 87, 34);
+            txtDiscordCustomDetails.Location = new Point(306, 80);
+            txtDiscordCustomDetails.Name = "txtDiscordCustomDetails";
+            txtDiscordCustomDetails.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
+            txtDiscordCustomDetails.PlaceholderText = "Leave empty for default";
+            txtDiscordCustomDetails.SelectedText = "";
+            txtDiscordCustomDetails.ShadowDecoration.CustomizableEdges = customizableEdges32;
+            txtDiscordCustomDetails.Size = new Size(200, 22);
+            txtDiscordCustomDetails.TabIndex = 6;
+            txtDiscordCustomDetails.TextChanged += txtDiscordCustomDetails_TextChanged;
+            // 
+            // lblDiscordState
+            // 
+            lblDiscordState.AutoSize = false;
+            lblDiscordState.BackColor = Color.Transparent;
+            lblDiscordState.Font = new Font("Trebuchet MS", 9F, FontStyle.Bold);
+            lblDiscordState.ForeColor = Color.White;
+            lblDiscordState.IsContextMenuEnabled = false;
+            lblDiscordState.IsSelectionEnabled = false;
+            lblDiscordState.Location = new Point(200, 108);
+            lblDiscordState.Name = "lblDiscordState";
+            lblDiscordState.Size = new Size(100, 22);
+            lblDiscordState.TabIndex = 7;
+            lblDiscordState.Text = "Custom State:";
+            lblDiscordState.TextAlignment = ContentAlignment.MiddleLeft;
+            // 
+            // txtDiscordCustomState
+            // 
+            txtDiscordCustomState.Animated = true;
+            txtDiscordCustomState.BackColor = Color.Transparent;
+            txtDiscordCustomState.BorderColor = Color.Transparent;
+            txtDiscordCustomState.BorderRadius = 6;
+            txtDiscordCustomState.CustomizableEdges = customizableEdges33;
+            txtDiscordCustomState.DefaultText = "";
+            txtDiscordCustomState.DisabledState.BorderColor = Color.FromArgb(208, 208, 208);
+            txtDiscordCustomState.DisabledState.FillColor = Color.FromArgb(226, 226, 226);
+            txtDiscordCustomState.DisabledState.ForeColor = Color.FromArgb(138, 138, 138);
+            txtDiscordCustomState.DisabledState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
+            txtDiscordCustomState.FillColor = Color.FromArgb(25, 25, 25);
+            txtDiscordCustomState.FocusedState.BorderColor = Color.FromArgb(255, 87, 34);
+            txtDiscordCustomState.Font = new Font("Trebuchet MS", 9F);
+            txtDiscordCustomState.ForeColor = Color.White;
+            txtDiscordCustomState.HoverState.BorderColor = Color.FromArgb(255, 87, 34);
+            txtDiscordCustomState.Location = new Point(306, 108);
+            txtDiscordCustomState.Name = "txtDiscordCustomState";
+            txtDiscordCustomState.PlaceholderForeColor = Color.FromArgb(138, 138, 138);
+            txtDiscordCustomState.PlaceholderText = "Leave empty for default";
+            txtDiscordCustomState.SelectedText = "";
+            txtDiscordCustomState.ShadowDecoration.CustomizableEdges = customizableEdges33;
+            txtDiscordCustomState.Size = new Size(200, 22);
+            txtDiscordCustomState.TabIndex = 8;
+            txtDiscordCustomState.TextChanged += txtDiscordCustomState_TextChanged;
+            // 
             // Pages
             // 
             Pages.Alignment = TabAlignment.Bottom;
@@ -851,10 +1087,10 @@
             Pages.Location = new Point(301, 37);
             Pages.Multiline = true;
             Pages.Name = "Pages";
-            Pages.Page = PageHome;
-            Pages.PageIndex = 3;
-            Pages.PageName = "PageHome";
-            Pages.PageTitle = "Home";
+            Pages.Page = PageSettings;
+            Pages.PageIndex = 1;
+            Pages.PageName = "PageSettings";
+            Pages.PageTitle = "Settings";
             Pages.SelectedIndex = 0;
             Pages.Size = new Size(857, 530);
             Pages.TabIndex = 0;
@@ -1006,6 +1242,7 @@
             PageSettings.Controls.Add(boxRam);
             PageSettings.Controls.Add(boxApp);
             PageSettings.Controls.Add(boxBehavior);
+            PageSettings.Controls.Add(boxDiscord);
             PageSettings.Location = new Point(4, 4);
             PageSettings.Name = "PageSettings";
             PageSettings.Padding = new Padding(3);
@@ -1025,10 +1262,10 @@
             boxJoin.FillColor = Color.FromArgb(10, 10, 10);
             boxJoin.Font = new Font("Trebuchet MS", 11F, FontStyle.Bold);
             boxJoin.ForeColor = Color.White;
-            boxJoin.Location = new Point(478, 11);
+            boxJoin.Location = new Point(471, 11);
             boxJoin.Name = "boxJoin";
             boxJoin.ShadowDecoration.CustomizableEdges = customizableEdges16;
-            boxJoin.Size = new Size(359, 103);
+            boxJoin.Size = new Size(357, 103);
             boxJoin.TabIndex = 3;
             boxJoin.Text = "Auto Server Join";
             boxJoin.UseTransparentBackground = true;
@@ -1044,10 +1281,10 @@
             boxArgs.FillColor = Color.FromArgb(10, 10, 10);
             boxArgs.Font = new Font("Trebuchet MS", 11F, FontStyle.Bold);
             boxArgs.ForeColor = Color.White;
-            boxArgs.Location = new Point(475, 120);
+            boxArgs.Location = new Point(468, 120);
             boxArgs.Name = "boxArgs";
             boxArgs.ShadowDecoration.CustomizableEdges = customizableEdges18;
-            boxArgs.Size = new Size(366, 102);
+            boxArgs.Size = new Size(360, 102);
             boxArgs.TabIndex = 3;
             boxArgs.Text = "Startup Args";
             boxArgs.UseTransparentBackground = true;
@@ -1066,10 +1303,10 @@
             boxVersion.FillColor = Color.FromArgb(10, 10, 10);
             boxVersion.Font = new Font("Trebuchet MS", 11F, FontStyle.Bold);
             boxVersion.ForeColor = Color.White;
-            boxVersion.Location = new Point(475, 229);
+            boxVersion.Location = new Point(468, 229);
             boxVersion.Name = "boxVersion";
             boxVersion.ShadowDecoration.CustomizableEdges = customizableEdges19;
-            boxVersion.Size = new Size(366, 98);
+            boxVersion.Size = new Size(360, 98);
             boxVersion.TabIndex = 3;
             boxVersion.Text = "Version Sorting";
             boxVersion.UseTransparentBackground = true;
@@ -1180,13 +1417,13 @@
             changeLogV0Box.BorderRadius = 6;
             changeLogV0Box.Controls.Add(richTextBox1);
             changeLogV0Box.CustomBorderColor = Color.FromArgb(231, 80, 34);
-            changeLogV0Box.CustomizableEdges = customizableEdges31;
+            changeLogV0Box.CustomizableEdges = customizableEdges35;
             changeLogV0Box.FillColor = Color.FromArgb(10, 10, 10);
             changeLogV0Box.Font = new Font("Trebuchet MS", 11F, FontStyle.Bold);
             changeLogV0Box.ForeColor = Color.White;
             changeLogV0Box.Location = new Point(13, 201);
             changeLogV0Box.Name = "changeLogV0Box";
-            changeLogV0Box.ShadowDecoration.CustomizableEdges = customizableEdges31;
+            changeLogV0Box.ShadowDecoration.CustomizableEdges = customizableEdges35;
             changeLogV0Box.Size = new Size(824, 251);
             changeLogV0Box.TabIndex = 3;
             changeLogV0Box.Text = "V1.0.0";
@@ -1265,7 +1502,7 @@
             btnLauncherPlugins.Animated = true;
             btnLauncherPlugins.BackColor = Color.Transparent;
             btnLauncherPlugins.BorderRadius = 6;
-            btnLauncherPlugins.CustomizableEdges = customizableEdges32;
+            btnLauncherPlugins.CustomizableEdges = customizableEdges36;
             btnLauncherPlugins.DisabledState.BorderColor = Color.DarkGray;
             btnLauncherPlugins.DisabledState.CustomBorderColor = Color.DarkGray;
             btnLauncherPlugins.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
@@ -1278,7 +1515,7 @@
             btnLauncherPlugins.Location = new Point(27, 371);
             btnLauncherPlugins.Name = "btnLauncherPlugins";
             btnLauncherPlugins.PressedColor = Color.FromArgb(231, 80, 34);
-            btnLauncherPlugins.ShadowDecoration.CustomizableEdges = customizableEdges33;
+            btnLauncherPlugins.ShadowDecoration.CustomizableEdges = customizableEdges37;
             btnLauncherPlugins.Size = new Size(256, 45);
             btnLauncherPlugins.TabIndex = 10;
             btnLauncherPlugins.TabStop = false;
@@ -1290,7 +1527,7 @@
             btnChangeLog.Animated = true;
             btnChangeLog.BackColor = Color.Transparent;
             btnChangeLog.BorderRadius = 6;
-            btnChangeLog.CustomizableEdges = customizableEdges34;
+            btnChangeLog.CustomizableEdges = customizableEdges38;
             btnChangeLog.DisabledState.BorderColor = Color.DarkGray;
             btnChangeLog.DisabledState.CustomBorderColor = Color.DarkGray;
             btnChangeLog.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
@@ -1303,7 +1540,7 @@
             btnChangeLog.Location = new Point(27, 320);
             btnChangeLog.Name = "btnChangeLog";
             btnChangeLog.PressedColor = Color.FromArgb(231, 80, 34);
-            btnChangeLog.ShadowDecoration.CustomizableEdges = customizableEdges35;
+            btnChangeLog.ShadowDecoration.CustomizableEdges = customizableEdges39;
             btnChangeLog.Size = new Size(256, 45);
             btnChangeLog.TabIndex = 9;
             btnChangeLog.TabStop = false;
@@ -1315,7 +1552,7 @@
             btnSettings2.Animated = true;
             btnSettings2.BackColor = Color.Transparent;
             btnSettings2.BorderRadius = 6;
-            btnSettings2.CustomizableEdges = customizableEdges36;
+            btnSettings2.CustomizableEdges = customizableEdges40;
             btnSettings2.DisabledState.BorderColor = Color.DarkGray;
             btnSettings2.DisabledState.CustomBorderColor = Color.DarkGray;
             btnSettings2.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
@@ -1328,7 +1565,7 @@
             btnSettings2.Location = new Point(27, 269);
             btnSettings2.Name = "btnSettings2";
             btnSettings2.PressedColor = Color.FromArgb(231, 80, 34);
-            btnSettings2.ShadowDecoration.CustomizableEdges = customizableEdges37;
+            btnSettings2.ShadowDecoration.CustomizableEdges = customizableEdges41;
             btnSettings2.Size = new Size(256, 45);
             btnSettings2.TabIndex = 8;
             btnSettings2.TabStop = false;
@@ -1421,7 +1658,7 @@
             btnHome.Animated = true;
             btnHome.BackColor = Color.Transparent;
             btnHome.BorderRadius = 6;
-            btnHome.CustomizableEdges = customizableEdges38;
+            btnHome.CustomizableEdges = customizableEdges42;
             btnHome.DisabledState.BorderColor = Color.DarkGray;
             btnHome.DisabledState.CustomBorderColor = Color.DarkGray;
             btnHome.DisabledState.FillColor = Color.FromArgb(169, 169, 169);
@@ -1434,7 +1671,7 @@
             btnHome.Location = new Point(27, 218);
             btnHome.Name = "btnHome";
             btnHome.PressedColor = Color.FromArgb(231, 80, 34);
-            btnHome.ShadowDecoration.CustomizableEdges = customizableEdges39;
+            btnHome.ShadowDecoration.CustomizableEdges = customizableEdges33;
             btnHome.Size = new Size(256, 45);
             btnHome.TabIndex = 0;
             btnHome.TabStop = false;
@@ -1483,6 +1720,8 @@
             boxApp.PerformLayout();
             boxBehavior.ResumeLayout(false);
             boxBehavior.PerformLayout();
+            boxDiscord.ResumeLayout(false);
+            boxDiscord.PerformLayout();
             Pages.ResumeLayout(false);
             PagePlugins.ResumeLayout(false);
             pnlPlugins.ResumeLayout(false);
@@ -1576,5 +1815,15 @@
         private components.Label lblWelcomeMessage;
         private components.GroupBox changeLogV0Box;
         private RichTextBox richTextBox1;
+        private components.GroupBox boxDiscord;
+        private components.CheckBox cbDiscordRPCEnabled;
+        private components.CheckBox cbDiscordShowDetails;
+        private components.CheckBox cbDiscordShowTime;
+        private components.Label lblDiscordAppId;
+        private components.TextBox txtDiscordApplicationId;
+        private components.Label lblDiscordDetails;
+        private components.TextBox txtDiscordCustomDetails;
+        private components.Label lblDiscordState;
+        private components.TextBox txtDiscordCustomState;
     }
 }

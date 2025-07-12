@@ -7,6 +7,8 @@ using CmlLib.Core.ProcessBuilder;
 using CmlLib.Core.Version;
 using CmlLib.Core.VersionMetadata;
 using System.Data;
+using DiscordRPC;
+using DiscordRPC.Logging;
 
 namespace CloudLauncher.forms.dashboard
 {
@@ -24,6 +26,8 @@ namespace CloudLauncher.forms.dashboard
         private bool _showAlpha = false;
         private bool _showBeta = false;
         private NotifyIcon _trayIcon;
+        private DiscordRpcClient _discordClient;
+        private DateTime _gameStartTime;
 
         private class CustomVersionMetadata : IVersionMetadata
         {
@@ -119,7 +123,8 @@ namespace CloudLauncher.forms.dashboard
 
             FetchChangeLogs(); // Fetch change logs asynchronously
 
-
+            // Initialize Discord RPC
+            InitializeDiscordRPC();
         }
 
 
@@ -595,6 +600,9 @@ namespace CloudLauncher.forms.dashboard
 
                 Logger.Info($"Launched Minecraft {version.Name} with {launchOption.MaximumRamMb}MB RAM");
 
+                // Update Discord RPC for game launch
+                UpdateDiscordForGameLaunch(version.Name);
+
                 // Update launch statistics
                 UpdateLaunchStatistics();
 
@@ -905,6 +913,14 @@ namespace CloudLauncher.forms.dashboard
                 cbCloseToTray.Checked = RegistryConfig.GetUserPreference("CloseToTray", false);
                 cbAutoUpdate.Checked = RegistryConfig.GetUserPreference("AutoUpdate", true);
 
+                // Load Discord RPC settings
+                cbDiscordRPCEnabled.Checked = RegistryConfig.GetUserPreference("DiscordRPCEnabled", true);
+                cbDiscordShowDetails.Checked = RegistryConfig.GetUserPreference("DiscordShowDetails", true);
+                cbDiscordShowTime.Checked = RegistryConfig.GetUserPreference("DiscordShowTime", true);
+                txtDiscordApplicationId.Text = RegistryConfig.GetUserPreference<string>("DiscordApplicationId", "1393378653060202578");
+                txtDiscordCustomDetails.Text = RegistryConfig.GetUserPreference<string>("DiscordCustomDetails", "");
+                txtDiscordCustomState.Text = RegistryConfig.GetUserPreference<string>("DiscordCustomState", "");
+
                 // Load startup position
                 string startupPosition = RegistryConfig.GetUserPreference<string>("StartupPosition", "Center Screen");
                 int positionIndex = ddStartupPosition.Items.IndexOf(startupPosition);
@@ -971,6 +987,81 @@ namespace CloudLauncher.forms.dashboard
                 string logLevel = ddLogLevel.SelectedItem.ToString();
                 RegistryConfig.SaveUserPreference("LogLevel", logLevel);
                 Logger.Info($"Log level: {logLevel}");
+            }
+        }
+
+        private void cbDiscordRPCEnabled_CheckedChanged(object sender, EventArgs e)
+        {
+            RegistryConfig.SaveUserPreference("DiscordRPCEnabled", cbDiscordRPCEnabled.Checked);
+            Logger.Info($"Discord RPC enabled: {cbDiscordRPCEnabled.Checked}");
+            
+            if (cbDiscordRPCEnabled.Checked)
+            {
+                InitializeDiscordRPC();
+            }
+            else
+            {
+                _discordClient?.Dispose();
+                _discordClient = null;
+            }
+        }
+
+        private void cbDiscordShowDetails_CheckedChanged(object sender, EventArgs e)
+        {
+            RegistryConfig.SaveUserPreference("DiscordShowDetails", cbDiscordShowDetails.Checked);
+            Logger.Info($"Discord show details: {cbDiscordShowDetails.Checked}");
+            
+            // Update presence immediately if Discord is connected
+            if (_discordClient?.IsInitialized == true)
+            {
+                ResetDiscordPresence();
+            }
+        }
+
+        private void cbDiscordShowTime_CheckedChanged(object sender, EventArgs e)
+        {
+            RegistryConfig.SaveUserPreference("DiscordShowTime", cbDiscordShowTime.Checked);
+            Logger.Info($"Discord show time: {cbDiscordShowTime.Checked}");
+            
+            // Update presence immediately if Discord is connected
+            if (_discordClient?.IsInitialized == true)
+            {
+                ResetDiscordPresence();
+            }
+        }
+
+        private void txtDiscordApplicationId_TextChanged(object sender, EventArgs e)
+        {
+            RegistryConfig.SaveUserPreference("DiscordApplicationId", txtDiscordApplicationId.Text);
+            Logger.Info($"Discord Application ID updated");
+            
+            // Reinitialize Discord RPC with new Application ID
+            if (cbDiscordRPCEnabled.Checked)
+            {
+                _discordClient?.Dispose();
+                InitializeDiscordRPC();
+            }
+        }
+
+        private void txtDiscordCustomDetails_TextChanged(object sender, EventArgs e)
+        {
+            RegistryConfig.SaveUserPreference("DiscordCustomDetails", txtDiscordCustomDetails.Text);
+            
+            // Update presence immediately if Discord is connected
+            if (_discordClient?.IsInitialized == true)
+            {
+                ResetDiscordPresence();
+            }
+        }
+
+        private void txtDiscordCustomState_TextChanged(object sender, EventArgs e)
+        {
+            RegistryConfig.SaveUserPreference("DiscordCustomState", txtDiscordCustomState.Text);
+            
+            // Update presence immediately if Discord is connected
+            if (_discordClient?.IsInitialized == true)
+            {
+                ResetDiscordPresence();
             }
         }
 
@@ -1079,6 +1170,9 @@ namespace CloudLauncher.forms.dashboard
             this.ShowInTaskbar = true;
             _trayIcon.Visible = false;
             this.BringToFront();
+            
+            // Reset Discord presence when returning to launcher
+            ResetDiscordPresence();
         }
 
         private void ExitApplication()
@@ -1106,8 +1200,128 @@ namespace CloudLauncher.forms.dashboard
             }
             else
             {
+                // Dispose Discord RPC client
+                _discordClient?.Dispose();
                 _trayIcon?.Dispose();
             }
         }
+
+        #region Discord RPC Methods
+
+        private void InitializeDiscordRPC()
+        {
+            try
+            {
+                bool discordEnabled = RegistryConfig.GetUserPreference("DiscordRPCEnabled", true);
+                if (!discordEnabled)
+                {
+                    Logger.Info("Discord RPC is disabled");
+                    return;
+                }
+
+                string applicationId = RegistryConfig.GetUserPreference<string>("DiscordApplicationId", "1393378653060202578");
+                if (string.IsNullOrEmpty(applicationId))
+                {
+                    Logger.Warning("Discord Application ID not set");
+                    return;
+                }
+
+                _discordClient = new DiscordRpcClient(applicationId);
+                _discordClient.Logger = new ConsoleLogger() {};
+
+                // Subscribe to events
+                _discordClient.OnReady += (sender, e) =>
+                {
+                    Logger.Info($"Discord RPC connected to user {e.User.Username}");
+                };
+
+                _discordClient.OnConnectionFailed += (sender, e) =>
+                {
+                    Logger.Warning($"Discord RPC connection failed: {e.FailedPipe}");
+                };
+
+                // Initialize the client
+                _discordClient.Initialize();
+
+                // Set initial presence
+                SetDiscordPresence("In Launcher", "Browsing", null);
+
+                Logger.Info("Discord RPC initialized successfully");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to initialize Discord RPC: {ex.Message}");
+            }
+        }
+
+        private void SetDiscordPresence(string details, string state, string version)
+        {
+            try
+            {
+                if (_discordClient == null || !_discordClient.IsInitialized)
+                    return;
+
+                bool showDetails = RegistryConfig.GetUserPreference("DiscordShowDetails", true);
+                bool showTime = RegistryConfig.GetUserPreference("DiscordShowTime", true);
+                string customDetails = RegistryConfig.GetUserPreference<string>("DiscordCustomDetails", "");
+                string customState = RegistryConfig.GetUserPreference<string>("DiscordCustomState", "");
+
+                var presence = new RichPresence()
+                {
+                    Details = showDetails ? (!string.IsNullOrEmpty(customDetails) ? customDetails : details) : "",
+                    State = showDetails ? (!string.IsNullOrEmpty(customState) ? customState : state) : "",
+                    Assets = new Assets()
+                    {
+                        LargeImageKey = "cloudlauncher_logo",
+                        LargeImageText = "CloudLauncher",
+                        SmallImageKey = version != null ? "minecraft_icon" : null,
+                        SmallImageText = version != null ? $"Minecraft {version}" : null
+                    }
+                };
+
+                if (showTime && version != null)
+                {
+                    presence.Timestamps = new Timestamps()
+                    {
+                        Start = _gameStartTime
+                    };
+                }
+
+                _discordClient.SetPresence(presence);
+                Logger.Debug($"Discord presence updated: {details} - {state}");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to update Discord presence: {ex.Message}");
+            }
+        }
+
+        private void UpdateDiscordForGameLaunch(string version)
+        {
+            try
+            {
+                _gameStartTime = DateTime.UtcNow;
+                string username = _currentSession?.Username ?? "Player";
+                SetDiscordPresence($"Playing Minecraft {version}", $"As {username}", version);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to update Discord for game launch: {ex.Message}");
+            }
+        }
+
+        private void ResetDiscordPresence()
+        {
+            try
+            {
+                SetDiscordPresence("In Launcher", "Browsing", null);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Failed to reset Discord presence: {ex.Message}");
+            }
+        }
+
+        #endregion
     }
 }
